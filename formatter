@@ -1,0 +1,560 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+#
+#    Formatter - a collection of output formatting functions in native bash
+#    Copyright (C) 2019 James Harmison <jharmison at gmail dot com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# Portions of this formatter were inspired by, and several taken from, the work
+#   in Spectre & Meltdown checker by Stephane Lesimple, licensed under the GNU
+# GPL 3.0
+#       https://github.com/speed47/spectre-meltdown-checker
+###############################################################################
+
+
+# Exposed functions documentation
+###############################################################################
+# ansifold W            Behaves like fold -s -w W except it doesn't count ANSI
+#                           escape sequences in the count for width.
+# wrap                  Wraps all arguments around the terminal width, using
+#                           ansifold.
+# center_wrap           Wraps all arguments around the terminal width, using
+#                           ansifold, and centers each line on the same.
+# repeat_char C #       Repeats character C # times, with no trailing newline.
+# warn_run [-q] M C     Displays message M, executes command C and redirects
+#                           stdout to FD7 as manipulated above. On return
+#                           status displays a [ SUCCESS ] or [ WARNING ] box.
+#                           Unless -q is specified, also outputs M to FD7.
+# error_run [-q] M C    Displays message M, executes command C and redirects
+#                           stdout to FD7 as manipulated above. On return
+#                           status displays a [ SUCCESS ] or [  ERROR  ] box.
+#                           Unless -q is specified, also outputs M to FD7.
+# border_text [O] T     Displays text T bordered in a box fit to 4+the width of
+#                           T when wrapped. Supports the following options:
+#       -s              Soft box edges, instead of hard-edged.
+#       -f              Fixed width box (defaults to $FORMATTER_MAX_WIDTH) with
+#                           T centered inside
+#       -c C            Box border is drawn in color C
+#       -w W            Box fixed width is W instead of $FORMATTER_MAX_WIDTH
+#               NOTE:   Any non-specified argument is interpreted as another
+#                           word of T.
+# center_border_text [O] T      The same as above, except the box is centered.
+#
+# Exposed variables documentation
+###############################################################################
+# black, red, green, yellow, blue, magenta, cyan, and white are provided as
+#   colors in combination with text, bold, and bg as placement.
+#
+# For example, the variables are named like: `$black_text`, `$magenta_bold` or
+#   `$white_bg` and can be prepended to any text you would like displayed in
+#   that way.
+#
+# Additionally, you have access to `$ansi_reset` to return all ANSI escapes to
+#   the default handling of your terminal.
+#
+# The following can be set before or after sourcing, and even in-between
+#   function calls, and will react accordingly:
+# $FORMATTER_MAX_WIDTH     The maximum width that formatter will allow any text
+#                              to wrap to..                         DEFAULT: 80
+# $FORMATTER_AUTO_WIDTH    Set to 1 for automatic width determinations, 0 for
+#                              fixed-width opterations (at MAX).    DEFAULT: 1
+# $FORMATTER_NO_COLOR      Set to 1 to strip ANSI escape sequences from all
+#                              text in all scenarios, e.g. to support logging
+#                              of statuses for an automated script, or 0 to
+#                              leave ANSI escapes/color alone.      DEFAULT: 0
+# FD 7                     The file descriptor that all *_run command output
+#                              is redirected to. If you want to collect the
+#                              output, change the handling of the FD with, for
+#                              example, `exec 7>/tmp/output.log`, to log the
+#                              message displayed, followed by the command
+#                              output, to the file /tmp/output.log.
+#
+# Additional notes
+###############################################################################
+# $FORMATTER_NO_ERRORS will contain the number of errors encountered during
+#   execution of any warn_run or error_runs by beginning at zero and
+#   incrementing for every failure encountered.
+# Obviously a lot more is available to you than documented. If you can read
+#   through them and understand their uses, you are of course welcome to do
+#   with them as you wish. They are unsupported and strange, unexpected
+#   behavior may result as the higher abstractions often exist to handle edge
+#   cases not accounted for in the undocumented functions.
+###############################################################################
+
+
+[ -z "$FORMATTER_NO_COLOR" ] && FORMATTER_NO_COLOR=0
+[ -z "$FORMATTER_AUTO_WIDTH" ] && FORMATTER_AUTO_WIDTH=1
+[ -z "$FORMATTER_MAX_WIDTH" ] && FORMATTER_MAX_WIDTH=80
+
+FORMATTER_NO_ERRORS=0
+
+if ! { >&7; } 2>/dev/null; then # FD 7 not already defined
+    exec 7>/dev/null            # so just dump all output
+fi
+
+# Some basic things to construct text types from
+###############################################################################
+_ctrlchar=$(printf "\033") ; _ansi_prefix='\033[' ; _ansi_fg=30 ; _ansi_bg=40
+_ansi_black=0 ; _ansi_red=1 ; _ansi_green=2 ; _ansi_yellow=3
+_ansi_blue=4 ; _ansi_magenta=5 ; _ansi_cyan=6 ; _ansi_white=7
+_ansi_regex="$_ctrlchar"'\[([0-9][0-9]?(;[0-9][0-9]?)?)?m'
+_ansi_bold_suffix=';1'
+
+# The beginning of our abstraction construction
+###############################################################################
+
+# Strip ANSI escapes from stdin
+__strip_stdin() {
+    sed -r "s/${_ansi_regex}//g"
+}
+
+# Strip ANSI escapes from all arguments
+__strip_args() {
+    printf -- "$*" | __strip_stdin
+}
+
+# Basic abstraction to handle output regardless of formatting choices
+__echo() {
+    if [ "$FORMATTER_NO_COLOR" -eq 1 ] ; then
+        __strip_args "$*"
+    else
+        printf -- "$*"
+    fi
+}
+
+# Repeat spaces for things
+__spaces() {
+    printf '%*s' "$1"
+}
+
+# Normal output with newline
+_echo() {
+    __echo "$*\n"
+}
+
+# Output with no trailing newline
+_echo_nol() {
+    __echo "$*"
+}
+
+
+# Some more layered abstraction, relying on the previous to produce consistent
+#   behavior. Wrapping and ANSI work.
+###############################################################################
+
+# Build ANSI definitions
+_ansi_seq() {
+    local _ansi_tail=m
+    local _ansi_type="$_ansi_fg"
+    local _ansi_color=''
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -b)     _ansi_type="$_ansi_bg"              ;;
+            -B)     _ansi_tail="${_ansi_bold_suffix}m"  ;;
+            *)      _ansi_color="$1"                    ;;
+        esac; shift
+    done
+    _ansi_code=$(( $_ansi_type + $_ansi_color ))
+    _echo_nol "${_ansi_prefix}${_ansi_code}${_ansi_tail}"
+}
+
+# Using the first argument as an ansi definition, wrap all subsequent args
+#   before ending with a reset
+_ansi_wrap() {
+    _echo_nol "${1}"
+    shift
+    _echo_nol "${*}"
+    _echo_nol "${ansi_reset}"
+}
+
+# Display a traditional red text error box
+_error_box() {
+    _ansi_wrap "${red_text}" ' [  '
+    _ansi_wrap "${red_bold}" 'ERROR'
+    _ansi_wrap "${red_text}" '  ] '
+    _echo
+}
+
+# Display a traditional yellow text warn box
+_warn_box() {
+    _ansi_wrap "${yellow_text}" ' [ '
+    _ansi_wrap "${yellow_bold}" 'WARNING'
+    _ansi_wrap "${yellow_text}" ' ] '
+    _echo
+}
+
+# Display a traditional green text success box
+_success_box() {
+    _ansi_wrap "${green_text}" ' [ '
+    _ansi_wrap "${green_bold}" 'SUCCESS'
+    _ansi_wrap "${green_text}" ' ] '
+    _echo
+}
+
+# Dynamically find the width we should draw to, using environment variables
+_term_width() {
+    if [ "$FORMATTER_AUTO_WIDTH" -eq 1 ]; then
+        if [ -n "$COLUMNS" ]; then
+            if [ "$COLUMNS" -gt '0' ] 2>/dev/null && \
+                                [ "$COLUMNS" -le "$FORMATTER_MAX_WIDTH" ]; then
+                echo "$COLUMNS"
+            else
+                echo "$FORMATTER_MAX_WIDTH"
+            fi
+        else
+            echo "$FORMATTER_MAX_WIDTH"
+        fi
+    else
+        echo "$FORMATTER_MAX_WIDTH"
+    fi
+}
+
+# Like `fold`, except ignores ANSI escape sequences in determining line width.
+#   First arg is the width to fold to, stdin gets folded.
+_ansifold() {
+    local stdin=$(cat)
+    local greppy_bits=$(_echo "$stdin" | grep -Pbo "${_ansi_regex}")
+    local width=$1
+    if [ -z "$greppy_bits" ]; then
+        _echo "$stdin" | fold -w $1
+    else
+        local startbyte=0
+        local offset=0
+        local bitlen=0
+        local endbyte=0
+        local countable_text=''
+        local header=''
+        local folded_text=''
+        local trailer=''
+        for bit in ${greppy_bits}; do
+            bitlen=$(_echo_nol "$bit" | cut -d: -f2 | wc -c)
+            endbyte=$(( $(echo "$bit" | cut -d: -f1) ))
+            countable_text=$(_echo_nol "$stdin" | head -c $endbyte | \
+                tail -c +$startbyte)
+            header=$(_echo_nol "$countable_text" | head -c \
+                $(( $width - $offset )))
+            folded_text=$(_echo_nol "$countable_text" | tail -c \
+                +$(( $width - offset )) | fold -w$width)
+            trailer=$(_echo_nol "$folded_text" | tail -n 1)
+            offset=$(_echo_nol "$trailer" | wc -c)
+            _echo_nol "$header\n$folded_text"
+            _echo_nol $(echo "$bit" | cut -d: -f2)
+            startbyte=$(( $endbyte + $bitlen ))
+        done
+
+        local remainder=$(_echo_nol "$stdin" | tail -c +$startbyte)
+        header=$(_echo_nol "$remainder" | head -c $(( $width - $offset )))
+        folded_text=$(_echo_nol "$remainder" | tail -c \
+            +$(( $width - offset )) | fold -w$width)
+        trailer=$(_echo_nol "$folded_text" | tail -n 1)
+        offset=$(_echo_nol "$trailer" | wc -c)
+        _echo_nol "$header\n$folded_text"
+    fi
+}
+
+# Like `fold -s`, except ignores ANSI escape sequences in determining line
+#   width. First arg is the width to fold to, stdin gets folded.
+# NOTE: doesn't play well with complex spaces or additional newlines. Will
+#   normalize everything, returning a single block of text delimited by spaces.
+ansifold() {
+    local stdin=$(cat)
+    local width=$1
+    local linew=0
+    local wordw=0
+    local line=()
+    local current_ansi=''
+    [ -z "$width" ] && width=$(_term_width)
+    for word in $stdin ; do
+        if ! _echo "$word" | grep -Pq "$_ansi_regex\$" && _echo "$word" | \
+                                                  grep -Pq "$_ansi_regex"; then
+            current_ansi=$(_echo "$word" | grep -Po "$_ansi_regex" | tail -1)
+        fi
+        wordw=$(__strip_args $word | wc -c)
+        (( linew += $wordw ))
+        # If the line is longer than the width after the word is added, print a
+        #   newline and output the word before resetting the count.
+        # If the line is only the word, and it's too long, then use fold-like
+        #   behavior without splitting on spaces.
+        if [ $wordw -gt $width ]; then # This word needs split
+            _echo "${line[*]}${ansi_reset}"
+            word=$(_echo_nol $word | _ansifold $width)
+            _echo "$word" | head -n -1
+            line=("$current_ansi"$(_echo_nol "$word" | tail -1))
+            linew=$(_echo "${line[*]}" | tail -1 | wc -c)
+        elif [ $linew -gt $width ]; then # This word should start a new line
+            _echo "${line[*]}${ansi_reset}"
+            line=("$current_ansi$word")
+            linew=$(( $wordw + 1 ))
+        else
+            line+=("$word")
+            (( linew++ ))
+        fi
+    done
+    _echo "${line[*]}${ansi_reset}"
+}
+
+# Internal text wrapper with no new line, first arg by second arg wide
+_wrap_nol() {
+    _echo_nol "$1" | ansifold "$2"
+}
+
+# More layers to run commands and provide status handling with consistent
+#   output
+###############################################################################
+
+# Display first arg as text, run remaining args, print number of spaces at end
+#   required to come to _term_width - 13 (for box displays)
+_run() {
+    local quiet=''
+    if [ "$1" == '-q' ]; then
+        quiet=true
+        shift
+    fi
+    # Overall width of the message
+    local _width=$(_term_width)
+    # Trimmed message for box display
+    local _msg_width=$(( $_width - 13 ))
+    # Wrap the message, no trailing newline
+    local _msg=$(_wrap_nol "$1" "$_msg_width")
+    # Figure out how wide the last line is
+    local _last_line=$(_echo "$_msg" | tail -n 1 | __strip_stdin | wc -c)
+    # How much space we need to append for the box
+    local _msg_space=$(( $_msg_width - $_last_line  + 1))
+
+    # Print the message (wrapped)
+    _echo_nol "$_msg"
+    shift
+    if [ "$1" != '-q' -o "$quiet" ]; then
+        # Log the message and the command
+        __strip_args "MSG: $_msg\n" >&7
+        __strip_args "RUN: ${*}\nRES:\n" >&7
+    fi
+    # Run the commands
+    eval "$@" >&7 2>&1
+    # Grab status
+    local run_ret=$?
+    # Increment failure counter if necessary
+    if [ $run_ret -ne 0 ]; then
+        (( FORMATTER_NO_ERRORS++ ))
+    fi
+    # Put the number of spaces required
+    __spaces "$_msg_space"
+    # Return code from command
+    return $run_ret
+}
+
+# Print the first arg without a newline centered on a space the second arg wide
+# DOES NOT WRAP, prints and returns 1 if too long
+_center_nol() {
+    local _msg="$1"
+    local _msg_max_width="$2"
+    # Find the actual width of the requested message
+    local _msg_width=$(_echo_nol "$_msg" | __strip_stdin | wc -c)
+    # If the message is longer than our max, something's gone wrong. Output
+    #   it and return non-zero
+    [ "$_msg_width" -gt "$_msg_max_width" ] && _echo_nol "$_msg" && return 1
+
+    # Find the space that's left on the sides
+    local _diff=$(( $_msg_max_width - $_msg_width ))
+    # Is our spacing odd?
+    local _odd=$(( $_diff % 2 ))
+    # Truncate first half to first space
+    local _start_space=$(( $_diff / 2 ))
+
+    __spaces $_start_space
+    _echo_nol "$_msg"
+    # Add our odd space if necessary to the end
+    __spaces $(( $_start_space + $_odd ))
+}
+
+# Centers the string on first arg width and adds newline
+_center_text() {
+    local _width="$1"
+    shift
+    _center_nol "$*" "$_width"
+    _echo
+}
+
+# Centers and wraps by first arg all remaining args
+_center_text_wrap() {
+    local _width="$1"
+    shift
+    _echo "$*" | ansifold $_width | while read -r line; do
+        _center_text "$_width" "$line"
+    done
+}
+
+# Draws a plus line, arg wide, like so:
+# +---------------------+
+_bounded_line() {
+    _echo_nol '+'
+    repeat_char '-' $(( $1 - 2 ))
+    _echo '+'
+}
+
+# Draws a slash rounded line, first arg wide
+# -1 as second arg for top, -2 as second arg for bottom
+_soft_bounded_line() {
+    [ "$2" == '-2' ] && _echo_nol '\\' || _echo_nol '/'
+    repeat_char '-' $(( $1 - 2 ))
+    [ "$2" == '-1' ] && _echo '\\' || _echo '/'
+}
+
+# Bound all text centered in pipes (no wrapping!)
+# If specified with `-c` as the second argument, will consume the following
+#   argument to define the color of the bounding lines only.
+_bounded_center_text() {
+    local _text_width=$(( $1 - 4 ))
+    shift
+    local _color=''
+    if [ "$1" == '-c' ]; then
+        shift; _color="$1"
+        shift
+    fi
+    _ansi_wrap "$_color" '| '
+    _center_nol "${@}" "$_text_width"
+    _ansi_wrap "$_color" ' |'
+    _echo
+}
+
+# Determine the length of the longest line in a string
+_longest_line_length() {
+    _echo "$*" | while read -r line; do
+        _echo_nol "$line" | __strip_stdin | wc -c
+    done | sort -n | tail -n 1
+}
+
+# BEGIN EXTERNAL FUNCTIONS AND VARS
+#   These are things you should use, built on the constructs above
+###############################################################################
+# Preconstructed text types
+black_text=$(_ansi_seq "$_ansi_black")
+red_text=$(_ansi_seq "$_ansi_red")
+green_text=$(_ansi_seq "$_ansi_green")
+yellow_text=$(_ansi_seq "$_ansi_yellow")
+blue_text=$(_ansi_seq "$_ansi_blue")
+magenta_text=$(_ansi_seq "$_ansi_magenta")
+cyan_text=$(_ansi_seq "$_ansi_cyan")
+white_text=$(_ansi_seq "$_ansi_white")
+
+black_bold=$(_ansi_seq -B "$_ansi_black")
+red_bold=$(_ansi_seq -B "$_ansi_red")
+green_bold=$(_ansi_seq -B "$_ansi_green")
+yellow_bold=$(_ansi_seq -B "$_ansi_yellow")
+blue_bold=$(_ansi_seq -B "$_ansi_blue")
+magenta_bold=$(_ansi_seq -B "$_ansi_magenta")
+cyan_bold=$(_ansi_seq -B "$_ansi_cyan")
+white_bold=$(_ansi_seq -B "$_ansi_white")
+
+black_bg=$(_ansi_seq -b "$_ansi_black")
+red_bg=$(_ansi_seq -b "$_ansi_red")
+green_bg=$(_ansi_seq -b "$_ansi_green")
+yellow_bg=$(_ansi_seq -b "$_ansi_yellow")
+blue_bg=$(_ansi_seq -b "$_ansi_blue")
+magenta_bg=$(_ansi_seq -b "$_ansi_magenta")
+cyan_bg=$(_ansi_seq -b "$_ansi_cyan")
+white_bg=$(_ansi_seq -b "$_ansi_white")
+
+ansi_reset='\033[0m'
+
+# Text wrapper for dynamic width terminal
+wrap() {
+    _echo "$*" | ansifold
+}
+
+# Center all passed args directly on the screen, wrapping text
+center_wrap() {
+    _center_text_wrap $(_term_width) "$*"
+}
+
+# Repeats first arg char second arg times...by cheating. (printf is very fast,
+#   though...)
+repeat_char() {
+    __spaces "$2" | tr ' ' "$1"
+}
+
+# Wrap the first arg, run the remaining args, display success box or warning
+#   box on failure. Returns the return code from the command.
+warn_run() {
+    _run "${@}"
+    local run_ret=$?
+    [ $run_ret -eq 0 ] && _success_box || _warn_box
+    return $run_ret
+}
+
+# Wrap the first arg, run the remaining args, display success box or error box
+#   on failure. Returns the return code form the command.
+error_run() {
+    _run "${@}"
+    local run_ret=$?
+    [ $run_ret -eq 0 ] && _success_box || _error_box
+    return $run_ret
+}
+
+# Wrap text in a box, centering all text within the box.
+border_text() {
+    local _wrap_width=''
+    local _msg_wrapped=''
+    local _topline=''
+    local _bottomline=''
+    local _box_msg=()
+    local _box=hard
+    local _width=''
+    local _auto=$FORMATTER_AUTO_WIDTH
+    local _color=''
+    # Parse our args
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -s)     _box=soft           ;;
+            -f)     _auto=0             ;;
+            -c)     shift; _color="$1"  ;;
+            -w)     shift; _width="$1"  ;;
+            *)      _box_msg+=("$1")        ;;
+        esac; shift
+    done
+    # Default to term width if not specified
+    [ -z "$_width" ] && _width=$(_term_width)
+    # Wrap text to 4 less than width to account for bounding box
+    _wrap_width=$(( $_width - 4 ))
+    _msg_wrapped=$(_wrap_nol "${_box_msg[*]}" "$_wrap_width")
+
+    # Force box width down to match the text for auto mode
+    if [ $_auto -eq 1 ]; then
+        _width=$(( $(_longest_line_length "$_msg_wrapped") + 4 ))
+    fi
+
+    # Define box borders
+    if [ "$_box" == 'hard' ]; then
+        _topline=$(_bounded_line "$_width")
+        _bottomline=$_topline
+    else
+        _topline=$(_soft_bounded_line "$_width" -1)
+        _bottomline=$(_soft_bounded_line "$_width" -2)
+    fi
+
+    _ansi_wrap "$_color" "${_topline}" ; _echo
+    _echo "$_msg_wrapped" | while read -r line; do
+        _bounded_center_text "$_width" -c "$_color" "$line"
+    done
+    _ansi_wrap "$_color" "${_bottomline}"; _echo
+}
+
+# The same as above, but centered on the screen
+center_border_text() {
+    border_text "${@}" | while read -r line; do
+        _center_text $(_term_width) "$line"
+    done
+}

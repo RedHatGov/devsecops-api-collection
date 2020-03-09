@@ -1,0 +1,11 @@
+*.swp
+tags
+__pycache__
+*.pyc
+venv
+build
+dist
+*.egg-info
+*.db
+*.log
+.eggs
