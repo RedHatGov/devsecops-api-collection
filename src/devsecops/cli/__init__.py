@@ -1,6 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
 import click
-from .opts import *  # noqa: F403
-
 
 class AliasedGroup(click.Group):
     """Overloaded click.Group to provide short, aliased names for commands"""
@@ -17,15 +16,7 @@ class AliasedGroup(click.Group):
         ctx.fail('Too many matches: %s' % ', '.join(sorted(matches)))
 
 
-epilog = """
-NOTE: the number of users and passwords to create must be equal. You can
-specify them in any order you wish, but they will be paired up in the order
-in which they were received for creation.
-"""
-
-
-@click.group(cls=AliasedGroup, name='main', invoke_without_command=True,
-             epilog=epilog)
+@click.group(cls=AliasedGroup, name='main')
 @click.version_option()
 def main():
     """
@@ -35,37 +26,17 @@ def main():
     """
     pass
 
+@main.group(cls=AliasedGroup, name='quay')
+def dso_quay():
+    """Manage a Quay API instance"""
 
-@main.command(name='quay', epilog=epilog)
-@opts.default_opts  # noqa: F405
-def dso_quay(url, login_username, login_password, usernames, passwords,
-             verbose):
-    """Manage the Quay API instance whose base endpoint is at URL"""
-    from devsecops.quay import quay
+@main.group(cls=AliasedGroup, name='nexus')
+def dso_nexus():
+    """Manage a Nexus API instance"""
 
-    with quay.Quay(
-        url, login_username, login_password, verbosity=verbose
-    ) as api:
-        for username, password in zip(usernames.split(','),
-                                      passwords.split(',')):
-            new_user = api.add_user(username, password)
-            if new_user is not None:
-                print(f'{username} added')
-            else:
-                print(f'{username} already exists')
-
-@main.command(name='sonarqube', epilog=epilog)
-@opts.default_opts  # noqa: F405
-@opts.new_login_pw_opt
-def dso_sonarqube(url, login_username, login_password, usernames, passwords,
-                  verbose, new_login_password):
-    """Manage the SonarQube API instance whose base endpoint is at URL"""
+@main.group(cls=AliasedGroup, name='sonarqube')
+def dso_sonarqube():
+    """Manage a SonarQube API instance"""
     pass
 
-
-@main.command(name='nexus', epilog=epilog)
-@opts.default_opts  # noqa: F405
-def dso_nexus(url, login_username, login_password, usernames, passwords,
-              verbose):
-    """Manage the Nexus API instance whose base endpoint is at URL"""
-    pass
+from devsecops.cli.services import quay, nexus # sonarqube

@@ -1,4 +1,25 @@
+# SPDX-License-Identifier: BSD-2-Clause
 import click
+import requests
+
+add_users_epilog = """
+NOTE: the number of users and passwords to create must be equal. You can
+specify them in any order you wish, but they will be paired up in the order
+in which they were received for creation.
+"""
+
+def check_online(url):
+    try:
+        if requests.get(url, verify=False).status_code != 200:
+            sys.stderr.write(f'{url} appears to be offline and is not '
+                             'responding to requests.\n')
+            sys.stderr.flush()
+            exit(1)
+    except requests.exceptions.SSLError:
+        sys.stderr.write(f'{url} appears to be offline and is not '
+                         'responding to requests.\n')
+        sys.stderr.flush()
+        exit(1)
 
 def url_arg(f):
     return click.argument('url', metavar='URL')(f)
@@ -32,12 +53,15 @@ def verbose_opt(f):
                         help=('Increase verbosity '
                               '(specify multiple times for more)'))(f)
 
+def search_user_opt(f):
+    return click.option('--username', '-u',
+                        help='the username to search for')(f)
+
 def default_opts(f):
     for option in reversed([
         url_arg,
         login_user_opt,
         login_pw_opt,
-        add_users_opt,
         verbose_opt
     ]):
         f = option(f)
