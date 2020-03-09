@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-__title__       = "devsecops"
+__title__       = "devsecops-api"
 __name__        = __title__
 __summary__     = "DevSecOps Workshop API Script"
 __uri__         = "https://github.com/jharmison-redhat/devsecops-api-script"

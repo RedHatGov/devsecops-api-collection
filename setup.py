@@ -50,9 +50,6 @@ def determine_version():
 setup(
     name=about['__name__'],
     version=determine_version(),
-    meta={
-        'commit': shell_run('git rev-list HEAD --no-walk --max-count=1'),
-    },
     description=about['__summary__'],
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -74,10 +71,6 @@ setup(
     packages=find_packages('src'),
     python_requires='>=3.6',
     install_requires=about['__requires__'],
-    setup_requires=['setuptools-meta'],
-    dependency_links=[
-        "git+https://github.com/noirbizarre/setuptools-meta.git#egg=setuptools-meta"
-    ],
     entry_points={
         'console_scripts': [
             'devsecops-api=devsecops.cli:main',

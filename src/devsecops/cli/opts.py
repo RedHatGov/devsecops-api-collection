@@ -1,9 +1,7 @@
 import click
 
 def url_arg(f):
-    return click.argument('url', metavar='URL',
-                          help=('the base URL of service, '
-                                'not including anything after the TLD'))(f)
+    return click.argument('url', metavar='URL')(f)
 
 def login_user_opt(f):
     return click.option('--login-username', '-U', required=True,
@@ -18,7 +16,7 @@ def add_users_opt(f):
         click.option('--usernames', '-u',
                      help=('usernames to add to the service '
                            '(separate multiples with commas)')),
-        click.option('--passwords', '-p', action='append',
+        click.option('--passwords', '-p',
                      help=('a password for the last username provided '
                            '(separate multiples with commas)'))
     ]):

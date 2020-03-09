@@ -24,7 +24,8 @@ in which they were received for creation.
 """
 
 
-@click.group(name='main', invoke_without_command=True, epilog=epilog)
+@click.group(cls=AliasedGroup, name='main', invoke_without_command=True,
+             epilog=epilog)
 @click.option('-v', '--verbose', count=True,
               help='Increase verbosity (specify multiple times for more)')
 @click.version_option()
@@ -37,10 +38,10 @@ def main(verbose):
     pass
 
 
-@main.command(cls=AliasedGroup, name='quay')
+@main.command(name='quay', epilog=epilog)
 @opts.default_opts  # noqa: F405
 def dso_quay(url, login_username, login_password, usernames, passwords):
-    """Manage the Quay API instance"""
+    """Manage the Quay API instance whose base endpoint is at URL"""
     from devsecops.quay import quay
     from pprint import pprint
 
@@ -49,16 +50,16 @@ def dso_quay(url, login_username, login_password, usernames, passwords):
                                       passwords.split(',')):
             pprint(api.add_user(username, password))
 
-@main.command(cls=AliasedGroup, name='sonarqube')
+@main.command(name='sonarqube', epilog=epilog)
 @opts.default_opts  # noqa: F405
 @opts.new_login_pw_opt
 def dso_sonarqube(url, login_username, login_password, usernames, passwords):
-    """Manage the SonarQube API instance"""
+    """Manage the SonarQube API instance whose base endpoint is at URL"""
     pass
 
 
-@main.command(cls=AliasedGroup, name='nexus')
+@main.command(name='nexus', epilog=epilog)
 @opts.default_opts  # noqa: F405
 def dso_nexus(url, login_username, login_password, usernames, passwords):
-    """Manage the Nexus API instance"""
+    """Manage the Nexus API instance whose base endpoint is at URL"""
     pass

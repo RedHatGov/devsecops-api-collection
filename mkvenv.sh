@@ -78,6 +78,11 @@ function on_error() {
     sync
     wrap "Error on mkvenv.sh line $1, logs available at" \
          "$(pwd)/mkvenv_error_$now.log" >&2
+    wrap 'Press Enter or Space to view the logs now,' \
+         'or any other key to quit.' >&2
+    read -sn1 quit_var
+    [ -z "$quit_var" ] && less "$(pwd)/mkvenv_error_$now.log" ||:
+    echo
     exit $2
 }
 
