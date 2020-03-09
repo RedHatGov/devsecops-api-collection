@@ -44,7 +44,7 @@ def determine_version():
                 pkg_ver += '-DIRTY'
             return pkg_ver
         except subprocess.CalledProcessError:
-            return about.get('__version__') + about.get('__release__')
+            return about.get('__version__') + '-' + about.get('__release__')
 
 
 setup(

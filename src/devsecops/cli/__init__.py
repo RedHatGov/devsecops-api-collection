@@ -26,10 +26,8 @@ in which they were received for creation.
 
 @click.group(cls=AliasedGroup, name='main', invoke_without_command=True,
              epilog=epilog)
-@click.option('-v', '--verbose', count=True,
-              help='Increase verbosity (specify multiple times for more)')
 @click.version_option()
-def main(verbose):
+def main():
     """
     CLI to manipulate the APIs of services supported for the DevSecOps workshop
     in order to facilitate manipulating the APIs of instantiated services
@@ -40,26 +38,34 @@ def main(verbose):
 
 @main.command(name='quay', epilog=epilog)
 @opts.default_opts  # noqa: F405
-def dso_quay(url, login_username, login_password, usernames, passwords):
+def dso_quay(url, login_username, login_password, usernames, passwords,
+             verbose):
     """Manage the Quay API instance whose base endpoint is at URL"""
     from devsecops.quay import quay
-    from pprint import pprint
 
-    with quay.Quay(url, login_username, login_password) as api:
+    with quay.Quay(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
         for username, password in zip(usernames.split(','),
                                       passwords.split(',')):
-            pprint(api.add_user(username, password))
+            new_user = api.add_user(username, password)
+            if new_user is not None:
+                print(f'{username} added')
+            else:
+                print(f'{username} already exists')
 
 @main.command(name='sonarqube', epilog=epilog)
 @opts.default_opts  # noqa: F405
 @opts.new_login_pw_opt
-def dso_sonarqube(url, login_username, login_password, usernames, passwords):
+def dso_sonarqube(url, login_username, login_password, usernames, passwords,
+                  verbose, new_login_password):
     """Manage the SonarQube API instance whose base endpoint is at URL"""
     pass
 
 
 @main.command(name='nexus', epilog=epilog)
 @opts.default_opts  # noqa: F405
-def dso_nexus(url, login_username, login_password, usernames, passwords):
+def dso_nexus(url, login_username, login_password, usernames, passwords,
+              verbose):
     """Manage the Nexus API instance whose base endpoint is at URL"""
     pass

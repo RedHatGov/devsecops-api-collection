@@ -27,12 +27,18 @@ def new_login_pw_opt(f):
     return click.option('--new-login-password', '-N', required=False,
                         help='a new password for the login user')(f)
 
+def verbose_opt(f):
+    return click.option('-v', '--verbose', count=True,
+                        help=('Increase verbosity '
+                              '(specify multiple times for more)'))(f)
+
 def default_opts(f):
     for option in reversed([
         url_arg,
         login_user_opt,
         login_pw_opt,
-        add_users_opt
+        add_users_opt,
+        verbose_opt
     ]):
         f = option(f)
     return f
