@@ -60,6 +60,7 @@ class SonarQube(BaseApiHandler):
         in between to account for SonarQube not instantiating the built-in
         admin user right away.
         """
+        self._get_session()
         tries = 4
         while not self._sign_in():
             self._swap_passwords()
