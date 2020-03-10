@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-2-Clause
 
-from devsecops.base.base_handler import BaseApiHandler
+from devsecops.base.base_handler import BaseApiHandler, UnexpectedApiResponse
 from typing import TypeVar
 from base64 import b64encode
 import requests
 import json
 
 T = TypeVar("T", bound="Nexus")
+
 
 class Nexus(BaseApiHandler):
     def __init__(self, base_url: str = None, username: str = None,
@@ -52,7 +53,7 @@ class Nexus(BaseApiHandler):
     def add_user(self, username: str = None,
                  password: str = None) -> requests.Response:
         """
-        Add a user to the Nexus instance, returning None if no user was created.
+        Add a user to the Nexus instance, returning None if no user was created
         """
         data = {
             'userId': username,

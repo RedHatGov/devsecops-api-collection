@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import click
 
+
 class AliasedGroup(click.Group):
     """Overloaded click.Group to provide short, aliased names for commands"""
     def get_command(self, ctx, cmd_name):
@@ -26,17 +27,21 @@ def main():
     """
     pass
 
+
 @main.group(cls=AliasedGroup, name='quay')
 def dso_quay():
     """Manage a Quay API instance"""
 
+
 @main.group(cls=AliasedGroup, name='nexus')
 def dso_nexus():
     """Manage a Nexus API instance"""
+
 
 @main.group(cls=AliasedGroup, name='sonarqube')
 def dso_sonarqube():
     """Manage a SonarQube API instance"""
     pass
 
-from devsecops.cli.services import quay, nexus # sonarqube
+
+from devsecops.cli.services import quay, nexus  # noqa E402,F401

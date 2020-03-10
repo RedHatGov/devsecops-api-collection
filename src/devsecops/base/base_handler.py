@@ -3,7 +3,6 @@
 
 import requests
 import json
-import sys
 import logging
 import logging.handlers
 from typing import TypeVar

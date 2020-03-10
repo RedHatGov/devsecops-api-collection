@@ -14,17 +14,17 @@ __all__ = [
 ]
 
 
-__title__       = "devsecops-api"
-__name__        = __title__
-__summary__     = "DevSecOps Workshop API Script"
-__uri__         = "https://github.com/jharmison-redhat/devsecops-api-script"
-__version__     = "0.1.0"
-__release__     = "alpha"
-__status__      = "Development"
-__author__      = "James Harmison"
-__email__       = "jharmison@redhat.com"
-__license__     = "BSD-2-Clause"
-__copyright__   = "2020 %s" % __author__
+__title__       = "devsecops-api"  # noqa: E221
+__name__        = __title__  # noqa: E221
+__summary__     = "DevSecOps Workshop API Script"  # noqa: E221
+__uri__         = "https://github.com/jharmison-redhat/devsecops-api-script"  # noqa: E221,E501
+__version__     = "0.1.0"  # noqa: E221
+__release__     = "alpha"  # noqa: E221
+__status__      = "Development"  # noqa: E221
+__author__      = "James Harmison"  # noqa: E221
+__email__       = "jharmison@redhat.com"  # noqa: E221
+__license__     = "BSD-2-Clause"  # noqa: E221
+__copyright__   = "2020 %s" % __author__  # noqa: E221
 
 __requires__ = [
     'click',

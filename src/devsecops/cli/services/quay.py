@@ -3,6 +3,7 @@ from devsecops.cli import opts
 from devsecops.cli import dso_quay
 from devsecops.quay import quay
 
+
 @dso_quay.command(name='add-user', epilog=opts.add_users_epilog)
 @opts.default_opts
 @opts.add_users_opt
