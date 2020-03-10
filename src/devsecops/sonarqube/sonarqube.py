@@ -102,6 +102,11 @@ class SonarQube(BaseApiHandler):
         """
         Searches for a user in SonarQube, returns results as a list
         """
-        return json.loads(
-            self.api_req('post', 'users/search', data={'q': username}).text
-        ).get('users')
+        try:
+            return json.loads(
+                self.api_req('post', 'users/search', data={'q': username}).text
+            ).get('users')
+        except UnexpectedApiResponse as e:
+            self.logger.warning(f'No response from query for  {username}')
+            self.logger.warning(json.loads(str(e))['error_message'])
+            pass
