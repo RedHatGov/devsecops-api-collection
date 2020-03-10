@@ -46,10 +46,12 @@ class SonarQube(BaseApiHandler):
             self.old_password = self.password
             self.password = self.new_password
             self.new_password = None
+            self.logger.debug('Changed to new_password')
         elif self.new_password is None and self.old_password is not None:
             self.new_password = self.password
             self.password = self.old_password
             self.old_password = None
+            self.logger.debug('Changed to old_password')
 
     def sign_in(self) -> None:
         """
