@@ -40,10 +40,10 @@ def login_pw_opt(f):
 
 def add_users_opt(f):
     for option in reversed([
-        click.option('--usernames', '-u',
+        click.option('--usernames', '-u', required=True,
                      help=('usernames to add to the service '
                            '(separate multiples with commas)')),
-        click.option('--passwords', '-p',
+        click.option('--passwords', '-p',, required=True,
                      help=('a password for the last username provided '
                            '(separate multiples with commas)'))
     ]):
