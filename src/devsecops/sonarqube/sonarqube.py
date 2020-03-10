@@ -20,6 +20,7 @@ class SonarQube(BaseApiHandler):
         super().__init__(
             service_name='SonarQube',
             base_url=base_url,
+            base_endpoint='api',
             username=username,
             password=password,
             verbosity=verbosity,
