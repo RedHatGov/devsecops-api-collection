@@ -9,6 +9,7 @@ from devsecops.nexus import nexus
 @opts.add_users_opt
 def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
                        passwords):
+    """Add users to the Nexus instance specified by URL"""
     opts.check_online(url)
 
     exit_code = 0
@@ -32,6 +33,7 @@ def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
 @dso_nexus.command(name='list-users')
 @opts.default_opts
 def dso_nexus_list_users(url, login_username, login_password, verbose):
+    """List all users on the Nexus instance specified by URL"""
     from pprint import pprint
 
     opts.check_online(url)
@@ -47,6 +49,7 @@ def dso_nexus_list_users(url, login_username, login_password, verbose):
 @opts.search_user_opt
 def dso_nexus_search_user(url, login_username, login_password, verbose,
                           username):
+    """Search for users by username on the Nexus instance specified by URL"""
     from pprint import pprint
 
     opts.check_online(url)
