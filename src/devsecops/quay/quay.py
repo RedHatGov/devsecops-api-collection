@@ -65,3 +65,4 @@ class Quay(BaseApiHandler):
         except UnexpectedApiResponse as e:
             self.logger.warning(f'Unable to add {username}')
             self.logger.info(json.loads(str(e)).get('error_message'))
+            pass
