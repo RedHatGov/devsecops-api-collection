@@ -44,4 +44,4 @@ def dso_sonarqube():
     pass
 
 
-from devsecops.cli.services import quay, nexus  # noqa E402,F401
+from devsecops.cli.services import quay, nexus, sonarqube  # noqa E402,F401
