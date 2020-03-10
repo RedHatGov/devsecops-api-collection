@@ -94,7 +94,7 @@ class SonarQube(BaseApiHandler):
             self.logger.error(json.loads(str(e))['error_message'])
             pass
 
-    def search_user(self, username: str = None) -> list:
+    def search_users(self, username: str = None) -> list:
         """
         Searches for a user in SonarQube, returns results as a list
         """
