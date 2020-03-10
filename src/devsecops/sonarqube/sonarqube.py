@@ -103,5 +103,5 @@ class SonarQube(BaseApiHandler):
         Searches for a user in SonarQube, returns results as a list
         """
         return json.loads(
-            self.api_req('post', 'users/search', data={'q': username})
+            self.api_req('post', 'users/search', data={'q': username}).text
         ).get('users')
