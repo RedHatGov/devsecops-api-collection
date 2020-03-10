@@ -25,7 +25,7 @@ class SonarQube(BaseApiHandler):
             password=password,
             verbosity=verbosity,
             auth=True,
-            kwarg_type='param'
+            kwarg_type='params'
         )
         self.new_password = new_password
         self.old_password = None
