@@ -147,6 +147,7 @@ class BaseApiHandler(object):
                           f'returned {ret_val.status_code}'))
         self.logger.debug(f'text: {ret_val.text}')
         self.logger.debug(f'headers: {ret_val.headers}')
+        self.logger.debug(f'data: {data}')
 
         if ret_val.status_code != ok:
             raise UnexpectedApiResponse(ret_val.text)
