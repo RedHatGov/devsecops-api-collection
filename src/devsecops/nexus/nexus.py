@@ -88,7 +88,7 @@ class Nexus(BaseApiHandler):
     def add_repo(self, reponame: str = None) -> requests.Response:
         data = {
             'name': reponame,
-            'oneline': True,
+            'online': True,
             'storage': {
                 'blobStoreName': 'default',
                 'strictContentTypeValidation': True,
