@@ -1,27 +1,12 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import click
 import requests
-import sys
 
 add_users_epilog = """
 NOTE: the number of users and passwords to create must be equal. You can
 specify them in any order you wish, but they will be paired up in the order
 in which they were received for creation.
 """
-
-
-def check_online(url):
-    try:
-        if requests.get(url, verify=False).status_code != 200:
-            sys.stderr.write(f'{url} appears to be offline and is not '
-                             'responding to requests.\n')
-            sys.stderr.flush()
-            exit(1)
-    except requests.exceptions.SSLError:
-        sys.stderr.write(f'{url} appears to be offline and is not '
-                         'responding to requests.\n')
-        sys.stderr.flush()
-        exit(1)
 
 
 def url_arg(f):

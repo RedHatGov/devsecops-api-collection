@@ -10,8 +10,6 @@ from devsecops.quay import quay
 def dso_quay_add_user(url, login_username, login_password, verbose, usernames,
                       passwords):
     """Add users to the Quay instance specified by URL"""
-    opts.check_online(url)
-
     with quay.Quay(
         url, login_username, login_password, verbosity=verbose
     ) as api:

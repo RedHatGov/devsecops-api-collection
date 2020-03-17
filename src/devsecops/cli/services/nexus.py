@@ -13,8 +13,6 @@ import click
 def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
                        passwords):
     """Add users to the Nexus instance specified by URL"""
-    opts.check_online(url)
-
     exit_code = 0
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
@@ -29,7 +27,7 @@ def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
                 print(f'{username} added')
             else:
                 exit_code += 1
-                print(f'{username}: failed')
+                print(f'{username} failed')
     exit(exit_code)
 
 
@@ -37,8 +35,6 @@ def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
 @opts.default_opts
 def dso_nexus_list_users(url, login_username, login_password, verbose):
     """List all users on the Nexus instance specified by URL"""
-    opts.check_online(url)
-
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
@@ -51,8 +47,6 @@ def dso_nexus_list_users(url, login_username, login_password, verbose):
 def dso_nexus_search_user(url, login_username, login_password, verbose,
                           username):
     """Search for users by username on the Nexus instance specified by URL"""
-    opts.check_online(url)
-
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
@@ -73,11 +67,9 @@ def dso_nexus_list_repos(url, login_username, login_password, verbose):
 @opts.default_opts
 @click.option('--repository-name', '-r', required=True,
               help='a name for the new repository')
-def ds_nexus_add_repo(url, login_username, login_password, verbose,
+def dso_nexus_add_repo(url, login_username, login_password, verbose,
                       repository_name):
     """Add a new Maven repository to the Nexus instance specified by URL"""
-    opts.check_online(url)
-
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:

@@ -31,11 +31,13 @@ def main():
 @main.group(cls=AliasedGroup, name='quay')
 def dso_quay():
     """Manage a Quay API instance"""
+    pass
 
 
 @main.group(cls=AliasedGroup, name='nexus')
 def dso_nexus():
     """Manage a Nexus API instance"""
+    pass
 
 
 @main.group(cls=AliasedGroup, name='sonarqube')
