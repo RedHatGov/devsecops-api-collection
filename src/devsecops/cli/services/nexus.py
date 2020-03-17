@@ -53,6 +53,22 @@ def dso_nexus_search_user(url, login_username, login_password, verbose,
         pprint(api.search_users(username))
 
 
+@dso_nexus.command(name='search-repository')
+@opts.default_opts
+@click.option('--repository-name', '-r', required=True,
+              help='the name of the repository to search for')
+def dso_nexus_search_repo(url, login_username, login_password, verbose,
+                          repository_name):
+    """
+    Search for and display information about a repositor in the Nexus instance
+    specified by URL
+    """
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        pprint(api.search_repos(repository_name))
+
+
 @dso_nexus.command(name='list-repositories')
 @opts.default_opts
 def dso_nexus_list_repos(url, login_username, login_password, verbose):
@@ -65,12 +81,27 @@ def dso_nexus_list_repos(url, login_username, login_password, verbose):
 
 @dso_nexus.command(name='add-repository')
 @opts.default_opts
-@click.option('--repository-name', '-r', required=True,
-              help='a name for the new repository')
+@click.option('--repository-names', '-r', required=True,
+              help=('the name of the repositories to add '
+                    '(separate multiples with commas)'))
 def dso_nexus_add_repo(url, login_username, login_password, verbose,
-                      repository_name):
-    """Add a new Maven repository to the Nexus instance specified by URL"""
+                       repository_names):
+    """Add new Maven repositories to the Nexus instance specified by URL"""
+    exit_code = 0
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
-        api.add_repo(repository_name)
+        for repository_name in repository_names.split(','):
+            if not api.search_repos(repository_name):
+                try:
+                    if api.add_repo(repository_name) is not None:
+                        print(f'{repository_name} added')
+                    else:
+                        exit_code += 1
+                        print(f'{repository_name} failed')
+                except UnexpectedApiResponse:
+                    exit_code += 1
+                    print(f'{repository_name} failed')
+            else:
+                print(f'{repository_name} ok')
+    exit(exit_code)

@@ -116,3 +116,15 @@ class Nexus(BaseApiHandler):
         }
         return self.api_req('post', 'beta/repositories/maven/hosted', data,
                             ok=201)
+
+    def search_repos(self, reponame: str = '') -> list:
+        """
+        Returns a list of all repositories whose name is similar to reponame
+        on the server.
+        """
+        def is_similar_to(repo: dict = {}, reponame: str = reponame) -> bool:
+            return repo.get('name', '').startswith(reponame) or \
+                   repo.get('name', '').endswith(reponame) or \
+                   reponame in repo.get('name', '')
+
+        return list(filter(is_similar_to, self.list_repos()))
