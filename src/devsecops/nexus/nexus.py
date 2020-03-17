@@ -94,6 +94,10 @@ class Nexus(BaseApiHandler):
         )
 
     def add_repo(self, reponame: str = None) -> requests.Response:
+        """
+        Adds a Maven2 format release repository backed by the default blobstore
+        to the server.
+        """
         data = {
             'name': reponame,
             'online': True,
