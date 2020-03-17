@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-2-Clause
 
+from typing import TypeVar
 import requests
 import json
 import logging
 import logging.handlers
-from typing import TypeVar
+import sys
 import urllib3
 urllib3.disable_warnings()
 
@@ -31,6 +32,14 @@ class BaseApiHandler(object):
         Initialize the base class
         """
         self._set_logger(service_name, verbosity)
+        if not self.check_online(base_url):
+            msg = (
+                f'{base_url} is providing unexpected responses to requests. '
+                'Please ensure you have the correct protocol and base URL for '
+                'the service.'
+            )
+            self.logger.error(msg)
+            raise UnexpectedApiResponse(msg)
         if base_url is not None and base_endpoint is not None:
             self.url: str = f'{base_url}/{base_endpoint}'
         if username is not None:
@@ -73,6 +82,9 @@ class BaseApiHandler(object):
         Context manager enter
         """
         self.sign_in()
+        self.logger.debug(
+            f'Context manager sign-in complete for {self.__class__}'
+        )
         self.logger.debug(f'Vars dump for {self.__class__}')
         self.logger.debug(vars(self))
         return self
@@ -82,12 +94,31 @@ class BaseApiHandler(object):
         Context manager exit
         """
         self.sign_out()
+        self.logger.debug(
+            f'Context manager sign-out complete for {self.__class__}'
+        )
+
+    @staticmethod
+    def check_online(url):
+        try:
+            if requests.get(url, verify=False).status_code != 200:
+                sys.stderr.write(f'{url} appears to be offline and is not '
+                                 'responding to requests.\n')
+                sys.stderr.flush()
+                return False
+        except requests.exceptions.SSLError:
+            sys.stderr.write(f'{url} appears to be offline and is not '
+                             'responding to requests.\n')
+            sys.stderr.flush()
+            return False
+        return True
 
     def _get_session(self, extra_headers: dict = {}) -> None:
         """
         Base session content that's similar regardless of subclass
         """
         if self.session is None:
+            self.logger.debug('Creating new session')
             self.session = requests.session()
             self.session.verify = False
         self.session.headers.update(

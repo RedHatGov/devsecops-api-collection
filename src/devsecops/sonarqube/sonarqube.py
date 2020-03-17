@@ -115,4 +115,3 @@ class SonarQube(BaseApiHandler):
             self.logger.warning(f'No response from query for  {username}')
             self.logger.warning(json.loads(str(e))['error_message'])
             pass
-

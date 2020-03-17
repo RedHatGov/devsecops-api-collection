@@ -11,7 +11,6 @@ from devsecops.sonarqube import sonarqube
 def dso_sonarqube_add_user(url, login_username, login_password, verbose,
                            usernames, passwords, new_login_password):
     """Add users to the SonarQube instance specified by URL"""
-    opts.check_online(url)
     exit_code = 0
     with sonarqube.SonarQube(
         url, login_username, login_password, verbosity=verbose,
@@ -41,8 +40,6 @@ def dso_sonarqube_search_user(url, login_username, login_password, verbose,
     Search for users by username on the SonarQube instance specified by URL
     """
     from pprint import pprint
-
-    opts.check_online(url)
 
     with sonarqube.SonarQube(
         url, login_username, login_password, verbosity=verbose,

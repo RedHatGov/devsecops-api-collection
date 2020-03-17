@@ -77,29 +77,54 @@ class Nexus(BaseApiHandler):
         """
         return json.loads(self.api_req(endpoint='beta/security/users').text)
 
-    def search_users(self, user) -> list:
+    def search_users(self, username: str = None) -> list:
         """
         Returns information about the queried users as a list of results
         """
         return json.loads(
-            self.api_req('get', f'beta/security/users?userId={user}').text
+            self.api_req('get', f'beta/security/users?userId={username}').text
         )
 
-    def create_repo(self, username) -> requests.Response:
+    def list_repos(self) -> list:
+        """
+        Returns a list of all repositories configured on the server
+        """
+        return json.loads(
+            self.api_req('get', 'beta/repositories').text
+        )
+
+    def add_repo(self, reponame: str = None) -> requests.Response:
+        """
+        Adds a Maven2 format release repository backed by the default blobstore
+        to the server.
+        """
         data = {
-            'name': username,
-            'oneline': True,
+            'name': reponame,
+            'online': True,
+            'format': 'maven2',
             'storage': {
                 'blobStoreName': 'default',
                 'strictContentTypeValidation': True,
-                'writePolicy': 'allow_once'
+                'writePolicy': 'ALLOW_ONCE'
             },
-            'cleanup': {
-                'policyName': 'weekly-cleanup'
-            },
+            'type': 'hosted',
+            'cleanup': None,
             'maven': {
-                'versionPolicy': 'mixed',
-                'layoutPolicy': 'strict'
+                'versionPolicy': 'RELEASE',
+                'layoutPolicy': 'STRICT'
             }
         }
-        return self.api_req('post', 'beta/repositories/maven/hosted', data)
+        return self.api_req('post', 'beta/repositories/maven/hosted', data,
+                            ok=201)
+
+    def search_repos(self, reponame: str = '') -> list:
+        """
+        Returns a list of all repositories whose name is similar to reponame
+        on the server.
+        """
+        def is_similar_to(repo: dict = {}, reponame: str = reponame) -> bool:
+            return repo.get('name', '').startswith(reponame) or \
+                   repo.get('name', '').endswith(reponame) or \
+                   reponame in repo.get('name', '')
+
+        return list(filter(is_similar_to, self.list_repos()))
