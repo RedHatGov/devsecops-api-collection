@@ -77,12 +77,12 @@ class Nexus(BaseApiHandler):
         """
         return json.loads(self.api_req(endpoint='beta/security/users').text)
 
-    def search_users(self, user) -> list:
+    def search_users(self, username: str = None) -> list:
         """
         Returns information about the queried users as a list of results
         """
         return json.loads(
-            self.api_req('get', f'beta/security/users?userId={user}').text
+            self.api_req('get', f'beta/security/users?userId={username}').text
         )
 
     def create_repo(self, username) -> requests.Response:
