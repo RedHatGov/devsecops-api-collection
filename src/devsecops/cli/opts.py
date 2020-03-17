@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: BSD-2-Clause
 import click
-import requests
 
 add_users_epilog = """
 NOTE: the number of users and passwords to create must be equal. You can

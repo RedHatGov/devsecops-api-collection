@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-2-Clause
 
+from typing import TypeVar
 import requests
 import json
 import logging
@@ -8,7 +9,6 @@ import logging.handlers
 import sys
 import urllib3
 urllib3.disable_warnings()
-from typing import TypeVar
 
 
 T = TypeVar("T", bound="BaseApiHandler")
