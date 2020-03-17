@@ -5,6 +5,7 @@ from devsecops.nexus import nexus
 
 from pprint import pprint
 import click
+import sys
 
 
 @dso_nexus.command(name='add-user', epilog=opts.add_users_epilog)
@@ -59,10 +60,8 @@ def dso_nexus_search_user(url, login_username, login_password, verbose,
               help='the name of the repository to search for')
 def dso_nexus_search_repo(url, login_username, login_password, verbose,
                           repository_name):
-    """
-    Search for and display information about a repositor in the Nexus instance
-    specified by URL
-    """
+    """Search for and display information about a repository in the Nexus
+    instance specified by URL"""
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
@@ -88,6 +87,7 @@ def dso_nexus_add_repo(url, login_username, login_password, verbose,
                        repository_names):
     """Add new Maven repositories to the Nexus instance specified by URL"""
     exit_code = 0
+    errors = {}
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
@@ -99,9 +99,13 @@ def dso_nexus_add_repo(url, login_username, login_password, verbose,
                     else:
                         exit_code += 1
                         print(f'{repository_name} failed')
-                except UnexpectedApiResponse:
+                except Exception as e:
                     exit_code += 1
+                    errors[repository_name] = e.msg
                     print(f'{repository_name} failed')
             else:
                 print(f'{repository_name} ok')
+    for repo, error in errors.items():
+        sys.stderr.write(f'Error adding {repo}:\n{error}\n')
+    sys.stderr.flush
     exit(exit_code)
