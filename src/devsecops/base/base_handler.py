@@ -73,6 +73,9 @@ class BaseApiHandler(object):
         Context manager enter
         """
         self.sign_in()
+        self.logger.debug(
+            f'Context manager sign-in complete for {self.__class__}'
+        )
         self.logger.debug(f'Vars dump for {self.__class__}')
         self.logger.debug(vars(self))
         return self
@@ -82,12 +85,16 @@ class BaseApiHandler(object):
         Context manager exit
         """
         self.sign_out()
+        self.logger.debug(
+            f'Context manager sign-out complete for {self.__class__}'
+        )
 
     def _get_session(self, extra_headers: dict = {}) -> None:
         """
         Base session content that's similar regardless of subclass
         """
         if self.session is None:
+            self.logger.debug('Creating new session')
             self.session = requests.session()
             self.session.verify = False
         self.session.headers.update(
