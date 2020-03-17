@@ -3,6 +3,9 @@ from devsecops.cli import opts
 from devsecops.cli import dso_nexus
 from devsecops.nexus import nexus
 
+from pprint import pprint
+import click
+
 
 @dso_nexus.command(name='add-user', epilog=opts.add_users_epilog)
 @opts.default_opts
@@ -34,8 +37,6 @@ def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
 @opts.default_opts
 def dso_nexus_list_users(url, login_username, login_password, verbose):
     """List all users on the Nexus instance specified by URL"""
-    from pprint import pprint
-
     opts.check_online(url)
 
     with nexus.Nexus(
@@ -50,8 +51,6 @@ def dso_nexus_list_users(url, login_username, login_password, verbose):
 def dso_nexus_search_user(url, login_username, login_password, verbose,
                           username):
     """Search for users by username on the Nexus instance specified by URL"""
-    from pprint import pprint
-
     opts.check_online(url)
 
     with nexus.Nexus(
