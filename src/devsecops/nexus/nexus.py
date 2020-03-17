@@ -97,17 +97,18 @@ class Nexus(BaseApiHandler):
         data = {
             'name': reponame,
             'online': True,
+            'format': 'maven2',
             'storage': {
                 'blobStoreName': 'default',
                 'strictContentTypeValidation': True,
-                'writePolicy': 'allow_once'
+                'writePolicy': 'ALLOW_ONCE'
             },
-            'cleanup': {
-                'policyName': 'weekly-cleanup'
-            },
+            'type': 'hosted',
+            'cleanup': None,
             'maven': {
-                'versionPolicy': 'mixed',
-                'layoutPolicy': 'strict'
+                'versionPolicy': 'RELEASE',
+                'layoutPolicy': 'STRICT'
             }
         }
-        return self.api_req('post', 'beta/repositories/maven/hosted', data)
+        return self.api_req('post', 'beta/repositories/maven/hosted', data,
+                            ok=201)
