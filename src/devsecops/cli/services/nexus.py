@@ -57,3 +57,28 @@ def dso_nexus_search_user(url, login_username, login_password, verbose,
         url, login_username, login_password, verbosity=verbose
     ) as api:
         pprint(api.search_users(username))
+
+
+@dso_nexus.command(name='list-repositories')
+@opts.default_opts
+def dso_nexus_list_repos(url, login_username, login_password, verbose):
+    """List all of the repositories on the Nexus instance specified by URL"""
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        pprint(api.list_repos())
+
+
+@dso_nexus.command(name='add-repository')
+@opts.default_opts
+@click.option('--repository-name', '-r', required=True,
+              help='a name for the new repository')
+def ds_nexus_add_repo(url, login_username, login_password, verbose,
+                      repository_name):
+    """Add a new Maven repository to the Nexus instance specified by URL"""
+    opts.check_online(url)
+
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        api.add_repo(repository_name)
