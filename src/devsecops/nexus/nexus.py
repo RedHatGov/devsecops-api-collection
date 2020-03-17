@@ -85,6 +85,14 @@ class Nexus(BaseApiHandler):
             self.api_req('get', f'beta/security/users?userId={username}').text
         )
 
+    def list_repos(self) -> list:
+        """
+        Returns a list of all repositories configured on the server
+        """
+        return json.loads(
+            self.api_req('get', 'beta/repositories').text
+        )
+
     def add_repo(self, reponame: str = None) -> requests.Response:
         data = {
             'name': reponame,
