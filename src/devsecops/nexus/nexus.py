@@ -85,9 +85,9 @@ class Nexus(BaseApiHandler):
             self.api_req('get', f'beta/security/users?userId={username}').text
         )
 
-    def create_repo(self, username) -> requests.Response:
+    def add_repo(self, reponame: str = None) -> requests.Response:
         data = {
-            'name': username,
+            'name': reponame,
             'oneline': True,
             'storage': {
                 'blobStoreName': 'default',
