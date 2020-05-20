@@ -20,3 +20,20 @@ def dso_quay_add_user(url, login_username, login_password, verbose, usernames,
                 print(f'{username} added')
             else:
                 print(f'{username} ok')
+
+
+@dso_quay.command(name='add-org')
+@opts.default_opts
+@opts.add_org_opt
+def dso_quay_add_org(url, login_username, login_password, verbose,
+                     organizations):
+    """Add Organizations to the Quay instance specified by URL"""
+    with quay.Quay(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        for organization in organizations.split(','):
+            new_org = api.add_org(organization)
+            if new_org is not None:
+                print(f'{organization} added')
+            else:
+                print(f'{organization} ok')

@@ -35,6 +35,12 @@ def add_users_opt(f):
     return f
 
 
+def add_org_opt(f):
+    return click.option('--organizations', '-o', required=True,
+                        help=('organizations to add to the service '
+                              '(separate multiples with commas)'))(f)
+
+
 def new_login_pw_opt(f):
     return click.option('--new-login-password', '-N', required=False,
                         help='a new password for the login user')(f)
