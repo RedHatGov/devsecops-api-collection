@@ -75,7 +75,8 @@ class SonarQube(BaseApiHandler):
                                'previousPassword': self.password,
                                'password': self.new_password}, ok=204)
             self._swap_passwords()
-            self.logger.info(f'Password for {self.username} was changed')
+            self.sign_out()
+            self._get_session()
             if not self._sign_in():
                 raise UnexpectedApiResponse(
                     'Unable to log back in after changing password'
