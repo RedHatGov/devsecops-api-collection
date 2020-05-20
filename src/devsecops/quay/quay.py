@@ -4,6 +4,8 @@ from devsecops.base.base_handler import BaseApiHandler, UnexpectedApiResponse
 from typing import TypeVar
 import requests
 import json
+import random
+import string
 
 T = TypeVar("T", bound="Quay")
 
@@ -43,12 +45,12 @@ class Quay(BaseApiHandler):
         })
 
     def api_req(self, method_name: str = None, endpoint: str = None,
-                data: dict = None) -> requests.Response:
+                data: dict = None, ok: int = 200) -> requests.Response:
         """
         Wrap API requests with next-CSRF tokens from the last request.
         """
         ret_val = super().api_req(method_name=method_name, endpoint=endpoint,
-                                  data=data)
+                                  data=data, ok=ok)
         token = ret_val.headers.get('X-Next-CSRF-Token')
         if token is not None:
             self.session.headers.update({'X-CSRF-Token': token})
@@ -75,8 +77,14 @@ class Quay(BaseApiHandler):
         try:
             return self.api_req('post', 'organization', data={
                 'name': org_name,
-                'email': 'quay@{self.base_url}'
-            })
+                'email': 'devsecops_{}@{}'.format(
+                    ''.join(random.choice(string.ascii_letters)
+                            for i in range(10)),
+                    '.'.join(
+                        self.base_url.strip('/').split('/')[-1].split('.')[-2:]
+                    )
+                )
+            }, ok=201)
         except UnexpectedApiResponse as e:
             self.logger.warning(f'Unable to add {org_name}')
             self.logger.info(json.loads(str(e)).get('error_message'))
