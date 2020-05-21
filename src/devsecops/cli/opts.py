@@ -41,6 +41,17 @@ def add_org_opt(f):
                               '(separate multiples with commas)'))(f)
 
 
+def add_app_opt(f):
+    for option in reversed([
+        click.option('--organization', '-o', required=True,
+                     help='the organization to add the app to'),
+        click.option('--app-name', '-a', required=True,
+                     help='the app to add to the org')
+    ]):
+        f = option(f)
+    return f
+
+
 def new_login_pw_opt(f):
     return click.option('--new-login-password', '-N', required=False,
                         help='a new password for the login user')(f)

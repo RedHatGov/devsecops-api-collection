@@ -89,3 +89,22 @@ class Quay(BaseApiHandler):
             self.logger.warning(f'Unable to add {org_name}')
             self.logger.info(json.loads(str(e)).get('error_message'))
             pass
+
+    def add_app(self, org_name: str = None,
+                app_name: str = None) -> requests.Response:
+        """
+        Add an Application to an Organization on the Quay instance, returning
+        None if no organization was created.
+        """
+        try:
+            return self.api_req(
+                'post',
+                f'organization/{org_name}/applications',
+                data={
+                    'name': app_name,
+                }
+            )
+        except UnexpectedApiResponse as e:
+            self.logger.warning(f'Unable to add {org_name}')
+            self.logger.info(json.loads(str(e)).get('error_message'))
+            pass

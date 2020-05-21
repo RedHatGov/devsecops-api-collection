@@ -37,3 +37,18 @@ def dso_quay_add_org(url, login_username, login_password, verbose,
                 print(f'{organization} added')
             else:
                 print(f'{organization} ok')
+
+
+@dso_quay.command(name='add-app')
+@opts.default_opts
+@opts.add_app_opt
+def dso_quay_add_app(url, login_username, login_password, verbose,
+                     organization, app_name):
+    """
+    Add an Application to an Organization on the Quay instance specified by URL
+    """
+    with quay.Quay(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        new_app = api.add_app(organization, app_name)
+        print(new_app.text)
