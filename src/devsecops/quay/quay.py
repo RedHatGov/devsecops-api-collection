@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-2-Clause
 from devsecops.base.base_handler import BaseApiHandler, UnexpectedApiResponse
-from typing import TypeVar
+from typing import TypeVar, List
 import requests
 import json
 import random
@@ -45,7 +45,7 @@ class Quay(BaseApiHandler):
         })
 
     def api_req(self, method_name: str = None, endpoint: str = None,
-                data: dict = None, ok: int = 200) -> requests.Response:
+                data: dict = None, ok: List[int] = [200]) -> requests.Response:
         """
         Wrap API requests with next-CSRF tokens from the last request.
         """
@@ -84,7 +84,7 @@ class Quay(BaseApiHandler):
                         self.base_url.strip('/').split('/')[-1].split('.')[-2:]
                     )
                 )
-            }, ok=201)
+            }, ok=[201])
         except UnexpectedApiResponse as e:
             self.logger.warning(f'Unable to add {org_name}')
             self.logger.info(json.loads(str(e)).get('error_message'))

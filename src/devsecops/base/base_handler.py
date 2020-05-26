@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-2-Clause
 
-from typing import TypeVar
+from typing import TypeVar, List
 import requests
 import json
 import logging
@@ -154,7 +154,7 @@ class BaseApiHandler(object):
         return self._sign_out()
 
     def api_req(self, method_name: str = 'get', endpoint: str = '',
-                data: dict = None, ok: int = 200) -> requests.Response:
+                data: dict = None, ok: List[int] = [200]) -> requests.Response:
         """
         Generic API request functionality for all other calls.
 
@@ -180,6 +180,6 @@ class BaseApiHandler(object):
         self.logger.debug(f'headers: {ret_val.headers}')
         self.logger.debug(f'data: {data}')
 
-        if ret_val.status_code != ok:
+        if ret_val.status_code not in ok:
             raise UnexpectedApiResponse(ret_val.text)
         return ret_val

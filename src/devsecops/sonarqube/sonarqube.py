@@ -73,7 +73,7 @@ class SonarQube(BaseApiHandler):
             self.api_req('post', 'users/change_password',
                          data={'login': self.username,
                                'previousPassword': self.password,
-                               'password': self.new_password}, ok=204)
+                               'password': self.new_password}, ok=[204])
             self._swap_passwords()
             self.sign_out()
             self._get_session()
