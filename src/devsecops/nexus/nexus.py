@@ -115,7 +115,7 @@ class Nexus(BaseApiHandler):
             }
         }
         return self.api_req('post', 'beta/repositories/maven/hosted', data,
-                            ok=201)
+                            ok=[201])
 
     def search_repos(self, reponame: str = '') -> list:
         """
