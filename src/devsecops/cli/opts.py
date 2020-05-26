@@ -35,18 +35,36 @@ def add_users_opt(f):
     return f
 
 
-def add_org_opt(f):
+def add_orgs_opt(f):
     return click.option('--organizations', '-o', required=True,
                         help=('organizations to add to the service '
                               '(separate multiples with commas)'))(f)
 
 
+def add_org_opt(f):
+    return click.option('--organization', '-o', required=True,
+                        help='the organization to add the app to')(f)
+
+
 def add_app_opt(f):
     for option in reversed([
-        click.option('--organization', '-o', required=True,
-                     help='the organization to add the app to'),
+        add_org_opt,
         click.option('--app-name', '-a', required=True,
-                     help='the app to add to the org')
+                     help='the application to add to the org'),
+        click.option('--app-description', '-d', required=False,
+                     help='the description of the application'),
+    ]):
+        f = option(f)
+    return f
+
+
+def add_robot_opt(f):
+    for option in reversed([
+        add_org_opt,
+        click.option('--robot-name', '-r', required=True,
+                     help='the robot name to add to the org'),
+        click.option('--robot-description', '-d', required=False,
+                     help='the description of the robot account'),
     ]):
         f = option(f)
     return f

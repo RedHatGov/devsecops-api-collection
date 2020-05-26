@@ -24,7 +24,7 @@ def dso_quay_add_user(url, login_username, login_password, verbose, usernames,
 
 @dso_quay.command(name='add-org')
 @opts.default_opts
-@opts.add_org_opt
+@opts.add_orgs_opt
 def dso_quay_add_org(url, login_username, login_password, verbose,
                      organizations):
     """Add Organizations to the Quay instance specified by URL"""
@@ -43,12 +43,33 @@ def dso_quay_add_org(url, login_username, login_password, verbose,
 @opts.default_opts
 @opts.add_app_opt
 def dso_quay_add_app(url, login_username, login_password, verbose,
-                     organization, app_name):
+                     organization, app_name, app_description):
     """
     Add an Application to an Organization on the Quay instance specified by URL
     """
     with quay.Quay(
         url, login_username, login_password, verbosity=verbose
     ) as api:
-        new_app = api.add_app(organization, app_name)
-        print(new_app.text)
+        new_app = api.add_app(organization, app_name, app_description)
+        print((f'{app_name} added (client_id: {new_app.json()["client_id"]}, '
+               f'client_secret: {new_app.json()["client_secret"]})'))
+
+
+@dso_quay.command(name='add-robot')
+@opts.default_opts
+@opts.add_robot_opt
+def dso_quay_add_robot(url, login_username, login_password, verbose,
+                       organization, robot_name, robot_description):
+    """
+    Add a Robot Account to an Organization on the Quay instance specified by
+    URL
+    """
+    with quay.Quay(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        if existing_robot := api.get_robot(organization, robot_name):
+            print(f'{robot_name} ok (token: {existing_robot.json()["token"]})')
+        else:
+            new_robot = api.add_robot(organization, robot_name,
+                                      robot_description)
+            print(f'{robot_name} added (token: {new_robot.json()["token"]})')

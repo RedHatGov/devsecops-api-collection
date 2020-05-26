@@ -90,8 +90,8 @@ class Quay(BaseApiHandler):
             self.logger.info(json.loads(str(e)).get('error_message'))
             pass
 
-    def add_app(self, org_name: str = None,
-                app_name: str = None) -> requests.Response:
+    def add_app(self, org_name: str = None, app_name: str = None,
+                description: str = None) -> requests.Response:
         """
         Add an Application to an Organization on the Quay instance, returning
         None if no organization was created.
@@ -102,9 +102,47 @@ class Quay(BaseApiHandler):
                 f'organization/{org_name}/applications',
                 data={
                     'name': app_name,
+                    'description': description or "Created with devsecops-api"
                 }
             )
         except UnexpectedApiResponse as e:
             self.logger.warning(f'Unable to add {org_name}')
+            self.logger.info(json.loads(str(e)).get('error_message'))
+            pass
+
+    def get_robot(self, org_name: str = None,
+                  robot_name: str = None) -> requests.Response:
+        """
+        Returns the response from the API server about a given robot account,
+        returning None if no robot is present.
+        """
+        try:
+            return self.api_req(
+                'get',
+                f'organization/{org_name}/robots/{robot_name}',
+            )
+        except UnexpectedApiResponse as e:
+            self.logger.warning(f'Unable to find {robot_name}')
+            self.logger.info(json.loads(str(e)).get('error_message'))
+            pass
+
+    def add_robot(self, org_name: str = None, robot_name: str = None,
+                  description: str = None) -> requests.Response:
+        """
+        Add a robot account to an Organization on the Quay instance, returning
+        None if no robot was created.
+        """
+        try:
+            return self.api_req(
+                'put',
+                f'organization/{org_name}/robots/{robot_name}',
+                data={
+                    'description': description or
+                    "Created with devsecops-api",
+                },
+                ok=[200, 201]
+            )
+        except UnexpectedApiResponse as e:
+            self.logger.warning(f'Unable to add {robot_name}')
             self.logger.info(json.loads(str(e)).get('error_message'))
             pass
