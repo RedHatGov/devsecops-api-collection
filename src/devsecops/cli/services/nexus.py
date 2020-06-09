@@ -149,7 +149,7 @@ def dso_nexus_add_proxy_repo(url, login_username, login_password, verbose,
 @click.option('--member-repository-names', '-r', required=True,
               help=('the name of the repositories to group '
                     '(separate multiples with commas)'))
-def dso_nexus_add_repo(url, login_username, login_password, verbose,
+def dso_nexus_update_group_repo(url, login_username, login_password, verbose,
                        group_repository, member_repository_names):
     """Update group repo with the list of member repositories"""
     exit_code = 0
