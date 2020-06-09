@@ -126,7 +126,7 @@ def dso_nexus_add_proxy_repo(url, login_username, login_password, verbose,
     ) as api:
         if not api.search_repos(repository_name):
             try:
-                if api.add_proxy_repo(repository_name) is not None:
+                if api.add_proxy_repo(repository_name, remote_repo_url) is not None:
                     print(f'proxy {repository_name} added')
                 else:
                     exit_code += 1
