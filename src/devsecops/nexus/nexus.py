@@ -134,7 +134,8 @@ class Nexus(BaseApiHandler):
             },
             'proxy': {
                 'remoteUrl': remoterepourl,
-                'contentMaxAge': 1440
+                'contentMaxAge': 1440,
+                'metadataMaxAge': 1440,
             },
             "negativeCache": {
                 "enabled": True,
