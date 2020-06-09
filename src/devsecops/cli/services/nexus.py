@@ -157,7 +157,7 @@ def dso_nexus_update_group_repo(url, login_username, login_password, verbose,
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
-        if not api.search_repos(group_repository_name):
+        if api.search_repos(group_repository_name):
             try:
                 if api.update_group_repo(group_repository_name, member_repository_names.split(',')) is not None:
                     print(f'group repo {group_repository_name} added')
@@ -169,7 +169,7 @@ def dso_nexus_update_group_repo(url, login_username, login_password, verbose,
                 errors[group_repository] = e.msg
                 print(f'group repo {group_repository_name} failed')
         else:
-            print(f'group repo {group_repository_name} ok')
+            print(f'group repo {group_repository_name} doesn\'t exist')
     for repo, error in errors.items():
         sys.stderr.write(f'Error updating group repo {repo}:\n{error}\n')
     sys.stderr.flush
