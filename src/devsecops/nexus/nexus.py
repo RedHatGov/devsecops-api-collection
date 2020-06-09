@@ -3,6 +3,7 @@
 
 from devsecops.base.base_handler import BaseApiHandler, UnexpectedApiResponse
 from typing import TypeVar
+from typing import List
 from base64 import b64encode
 import requests
 import json
