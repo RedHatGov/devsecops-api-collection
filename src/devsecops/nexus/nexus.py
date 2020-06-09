@@ -141,6 +141,10 @@ class Nexus(BaseApiHandler):
                 "enabled": True,
                 "timeToLive": 1440
             },
+            "httpClient": {
+                "blocked": False,
+                "autoBlock": True,
+            },
             'cleanup': None,
             'maven': {
                 'versionPolicy': 'RELEASE',
