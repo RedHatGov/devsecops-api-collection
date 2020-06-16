@@ -118,7 +118,8 @@ class Nexus(BaseApiHandler):
         return self.api_req('post', 'beta/repositories/maven/hosted', data,
                             ok=[201])
 
-    def add_proxy_repo(self, reponame: str = None, remoterepourl: str = None) -> requests.Response:
+    def add_proxy_repo(self, reponame: str = None,
+                       remoterepourl: str = None) -> requests.Response:
         """
         Adds a Maven2 format proxy repository backed by the default blobstore
         to the server.
@@ -154,9 +155,11 @@ class Nexus(BaseApiHandler):
         return self.api_req('post', 'beta/repositories/maven/proxy', data,
                             ok=[201])
 
-    def update_group_repo(self, reponame: str , memberreponames: List[str]) -> requests.Response:
+    def update_group_repo(self, reponame: str,
+                          memberreponames: List[str]) -> requests.Response:
         """
-        Adds a new repository to the default set of repos in the maven-public group.
+        Adds a new repository to the default set of repos in the maven-public
+        group.
         """
         data = {
             'name': reponame,
@@ -170,8 +173,8 @@ class Nexus(BaseApiHandler):
                 "memberNames": memberreponames
             }
         }
-        return self.api_req('put', f'beta/repositories/maven/group/{reponame}', data,
-                            ok=[204])
+        return self.api_req('put', f'beta/repositories/maven/group/{reponame}',
+                            data, ok=[204])
 
     def search_repos(self, reponame: str = '') -> list:
         """
