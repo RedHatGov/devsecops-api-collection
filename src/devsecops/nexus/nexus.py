@@ -3,6 +3,7 @@
 
 from devsecops.base.base_handler import BaseApiHandler, UnexpectedApiResponse
 from typing import TypeVar
+from typing import List
 from base64 import b64encode
 import requests
 import json
@@ -116,6 +117,61 @@ class Nexus(BaseApiHandler):
         }
         return self.api_req('post', 'beta/repositories/maven/hosted', data,
                             ok=[201])
+
+    def add_proxy_repo(self, reponame: str = None, remoterepourl: str = None) -> requests.Response:
+        """
+        Adds a Maven2 format proxy repository backed by the default blobstore
+        to the server.
+        """
+        data = {
+            'name': reponame,
+            'online': True,
+            'format': 'maven2',
+            'storage': {
+                'blobStoreName': 'default',
+                'strictContentTypeValidation': True,
+                'writePolicy': 'ALLOW_ONCE'
+            },
+            'proxy': {
+                'remoteUrl': remoterepourl,
+                'contentMaxAge': 1440,
+                'metadataMaxAge': 1440,
+            },
+            "negativeCache": {
+                "enabled": True,
+                "timeToLive": 1440
+            },
+            "httpClient": {
+                "blocked": False,
+                "autoBlock": True,
+            },
+            'cleanup': None,
+            'maven': {
+                'versionPolicy': 'RELEASE',
+                'layoutPolicy': 'STRICT'
+            }
+        }
+        return self.api_req('post', 'beta/repositories/maven/proxy', data,
+                            ok=[201])
+
+    def update_group_repo(self, reponame: str , memberreponames: List[str]) -> requests.Response:
+        """
+        Adds a new repository to the default set of repos in the maven-public group.
+        """
+        data = {
+            'name': reponame,
+            'online': True,
+            'format': 'maven2',
+            'storage': {
+                'blobStoreName': 'default',
+                'strictContentTypeValidation': True,
+            },
+            'group': {
+                "memberNames": memberreponames
+            }
+        }
+        return self.api_req('put', f'beta/repositories/maven/group/{reponame}', data,
+                            ok=[204])
 
     def search_repos(self, reponame: str = '') -> list:
         """

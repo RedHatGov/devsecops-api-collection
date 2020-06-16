@@ -109,3 +109,68 @@ def dso_nexus_add_repo(url, login_username, login_password, verbose,
         sys.stderr.write(f'Error adding {repo}:\n{error}\n')
     sys.stderr.flush
     exit(exit_code)
+
+@dso_nexus.command(name='add-proxy-repository')
+@opts.default_opts
+@click.option('--repository-name', '-r', required=True,
+              help=('the name of the repositories to add '))
+@click.option('--remote-repo-url', '-r', required=True,
+              help=('the URL of the remote repo to proxy'))
+def dso_nexus_add_proxy_repo(url, login_username, login_password, verbose,
+                       repository_name, remote_repo_url):
+    """Add a Maven proxy repositories to the Nexus instance specified by URL"""
+    exit_code = 0
+    errors = {}
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        if not api.search_repos(repository_name):
+            try:
+                if api.add_proxy_repo(repository_name, remote_repo_url) is not None:
+                    print(f'proxy {repository_name} added')
+                else:
+                    exit_code += 1
+                    print(f'proxy {repository_name} failed')
+            except Exception as e:
+                exit_code += 1
+                errors[repository_name] = e.msg
+                print(f'proxy {repository_name} failed')
+        else:
+            print(f'proxy {repository_name} ok')
+    for repo, error in errors.items():
+        sys.stderr.write(f'Error adding {repo}:\n{error}\n')
+    sys.stderr.flush
+    exit(exit_code)    
+
+@dso_nexus.command(name='update-group-repo')
+@opts.default_opts
+@click.option('--group-repository-name', '-r', required=True,
+              help=('the name of the group repository to update '))
+@click.option('--member-repository-names', '-r', required=True,
+              help=('the name of the repositories to group '
+                    '(separate multiples with commas)'))
+def dso_nexus_update_group_repo(url, login_username, login_password, verbose,
+                       group_repository_name, member_repository_names):
+    """Update group repo with the list of member repositories"""
+    exit_code = 0
+    errors = {}
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        if api.search_repos(group_repository_name):
+            try:
+                if api.update_group_repo(group_repository_name, member_repository_names.split(',')) is not None:
+                    print(f'group repo {group_repository_name} added')
+                else:
+                    exit_code += 1
+                    print(f'group repo {group_repository_name} failed')
+            except Exception as e:
+                exit_code += 1
+                errors[group_repository] = e.msg
+                print(f'group repo {group_repository_name} failed')
+        else:
+            print(f'group repo {group_repository_name} doesn\'t exist')
+    for repo, error in errors.items():
+        sys.stderr.write(f'Error updating group repo {repo}:\n{error}\n')
+    sys.stderr.flush
+    exit(exit_code)
