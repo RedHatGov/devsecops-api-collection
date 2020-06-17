@@ -67,7 +67,8 @@ def dso_quay_add_robot(url, login_username, login_password, verbose,
     with quay.Quay(
         url, login_username, login_password, verbosity=verbose
     ) as api:
-        if existing_robot := api.get_robot(organization, robot_name):
+        existing_robot = api.get_robot(organization, robot_name)
+        if existing_robot:
             print(f'{robot_name} ok (token: {existing_robot.json()["token"]})')
         else:
             new_robot = api.add_robot(organization, robot_name,
