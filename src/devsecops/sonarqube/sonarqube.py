@@ -116,3 +116,19 @@ class SonarQube(BaseApiHandler):
             self.logger.warning(f'No response from query for  {username}')
             self.logger.warning(json.loads(str(e))['error_message'])
             pass
+
+    def update_setting(self, setting_name: str,
+                 setting_value: str = None) -> requests.Response:
+        """
+        Update a  SonarQube setting
+        """
+        try:
+            return self.api_req('post', 'settings/set', data={
+                'key': setting_name,
+                'value': setting_value
+            }, ok = [204])
+        except UnexpectedApiResponse as e:
+            self.logger.error(f'Error setting {setting_name} to value {setting_value}')
+            # self.logger.error(json.loads(str(e))['error_message'])
+            self.logger.exception("Update setting error", exc_info=True)
+            pass    
