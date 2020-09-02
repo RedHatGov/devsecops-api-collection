@@ -64,18 +64,19 @@ class BaseApiHandler(object):
         stderr = logging.StreamHandler()
         stderr.setFormatter(formatter)
 
+        # When verbose, output lots of log information to stderr
+        verbosity = min(50, max(10, 40 - verbosity * 10))
+        stderr.setLevel(verbosity)
+
+        self.logger.addHandler(stderr)
+        
         if os.path.exists('/dev/log'):
             syslog = logging.handlers.SysLogHandler(address='/dev/log')
             syslog.setFormatter(formatter)
 
-            # When verbose, output lots of log information to stderr
-            verbosity = min(50, max(10, 40 - verbosity * 10))
-            stderr.setLevel(verbosity)
-
             # Always be pretty verbose to syslog
             syslog.setLevel(logging.INFO)
 
-            self.logger.addHandler(stderr)
             self.logger.addHandler(syslog)
 
         self.logger.info(f'Logging initialized, verbosity: {verbosity}')
