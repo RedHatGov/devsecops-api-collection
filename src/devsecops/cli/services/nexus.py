@@ -180,3 +180,43 @@ def dso_nexus_update_group_repo(url, login_username, login_password, verbose,
         sys.stderr.write(f'Error updating group repo {repo}:\n{error}\n')
     sys.stderr.flush
     exit(exit_code)
+
+@dso_nexus.command(name='add-script')
+@opts.default_opts
+@click.option('--script-name', '-n', required=True,
+              help=('the name of the script to add'))
+@click.option('--script-content', '-c', required=True,
+              help=('the script\'s content'))
+@click.option('--script-type', '-t', required=True,
+              help=('the script\'s type'))
+def dso_nexus_add_script(url, login_username, login_password, verbose,
+                       script_name, script_content, script_type):
+    """Add new Scripts to the Nexus instance specified by URL"""
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        try:
+            api.add_script(script_name, script_content, script_type)
+        except Exception as e:
+            print(f'{script_name} failed')
+            exit(1)
+
+
+@dso_nexus.command(name='run-script')
+@opts.default_opts
+@click.option('--script-name', '-n', required=True,
+              help=('the name of the script to run'))
+@click.option('--body', '-b', required=False,
+              help=('the body of parameters to pass to the script'))
+def dso_nexus_run_script(url, login_username, login_password, verbose,
+                       script_name, body):
+    """Run the specified Script in the Nexus instance specified by URL"""
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        try:
+            api.run_script(script_name, body)
+        except Exception as e:
+            print(f'{script_name} failed')
+            exit(1)
+                
