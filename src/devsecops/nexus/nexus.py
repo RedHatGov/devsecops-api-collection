@@ -187,3 +187,22 @@ class Nexus(BaseApiHandler):
                    reponame in repo.get('name', '')
 
         return list(filter(is_similar_to, self.list_repos()))
+
+    def add_script(self, scriptname: str, scriptcontent: str, scripttype: str) -> requests.Response:
+        """
+        Adds a new script to server. Must have scripting enabled (nexus.scripts.allowCreation=true) 
+        in /nexus-data/etc/nexus.properties
+        """
+        data = {
+            'name': scriptname,
+            'content': scriptcontent,
+            'type': scripttype
+        }
+        return self.api_req('post', 'v1/script', data, ok=[204])
+
+    def run_script(self, scriptname: str, body: str = '') -> requests.Response:
+        """
+        Runs a script on the server. Must have scripting enabled (nexus.scripts.allowCreation=true) 
+        in /nexus-data/etc/nexus.properties
+        """
+        return self.api_req('post', f'v1/script/{scriptname}/run', body, ok=[200])
