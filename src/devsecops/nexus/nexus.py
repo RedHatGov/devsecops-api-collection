@@ -188,14 +188,6 @@ class Nexus(BaseApiHandler):
 
         return list(filter(is_similar_to, self.list_repos()))
 
-    def search_scripts(self, scriptname: str = None) -> list:
-        """
-        Returns information about the queried scripts as a list of results
-        """
-        return json.loads(
-            self.api_req('get', f'v1/script/{scriptname}').text
-        )
-
     def add_script(self, scriptname: str, scriptcontent: str, scripttype: str) -> requests.Response:
         """
         Adds a new script to server. Must have scripting enabled (nexus.scripts.allowCreation=true) 
