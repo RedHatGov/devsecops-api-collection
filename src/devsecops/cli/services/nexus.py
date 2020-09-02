@@ -196,12 +196,15 @@ def dso_nexus_add_script(url, login_username, login_password, verbose,
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
-        try:
-            api.add_script(script_name, script_content, script_type)
-        except Exception as e:
-                exit_code += 1
-                errors[script_name] = e.msg
-                print(f'{script_name} failed')
+        if not api.search_scripts(script_name):
+            try:
+                api.add_script(script_name, script_content, script_type)
+            except Exception as e:
+                    exit_code += 1
+                    errors[script_name] = e.msg
+                    print(f'{script_name} failed')
+        else:
+            print(f'script {script_name} ok')
 
     sys.stderr.flush
     exit(exit_code)
