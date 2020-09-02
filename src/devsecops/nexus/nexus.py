@@ -188,10 +188,11 @@ class Nexus(BaseApiHandler):
 
         return list(filter(is_similar_to, self.list_repos()))
 
-    def add_script(self, scriptname: str, scriptcontent: str, scripttype: str) -> requests.Response:
+    def add_script(self, scriptname: str, scriptcontent: str,
+                   scripttype: str) -> requests.Response:
         """
-        Adds a new script to server. Must have scripting enabled (nexus.scripts.allowCreation=true) 
-        in /nexus-data/etc/nexus.properties
+        Adds a new script to server. Must have scripting enabled
+        (nexus.scripts.allowCreation=true) in /nexus-data/etc/nexus.properties
         """
         data = {
             'name': scriptname,
@@ -202,7 +203,8 @@ class Nexus(BaseApiHandler):
 
     def run_script(self, scriptname: str, body: str = '') -> requests.Response:
         """
-        Runs a script on the server. Must have scripting enabled (nexus.scripts.allowCreation=true) 
-        in /nexus-data/etc/nexus.properties
+        Runs a script on the server. Must have scripting enabled
+        (nexus.scripts.allowCreation=true) in /nexus-data/etc/nexus.properties
         """
-        return self.api_req('post', f'v1/script/{scriptname}/run', body, ok=[200])
+        return self.api_req('post', f'v1/script/{scriptname}/run', body,
+                            ok=[200])
