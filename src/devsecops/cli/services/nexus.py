@@ -192,18 +192,15 @@ def dso_nexus_update_group_repo(url, login_username, login_password, verbose,
 def dso_nexus_add_script(url, login_username, login_password, verbose,
                        script_name, script_content, script_type):
     """Add new Scripts to the Nexus instance specified by URL"""
-    exit_code = 0
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
         try:
             api.add_script(script_name, script_content, script_type)
         except Exception as e:
-                exit_code += 1
-                print(f'{script_name} failed')
+            print(f'{script_name} failed')
+            exit(1)
 
-    sys.stderr.flush
-    exit(exit_code)
 
 @dso_nexus.command(name='run-script')
 @opts.default_opts
@@ -214,15 +211,12 @@ def dso_nexus_add_script(url, login_username, login_password, verbose,
 def dso_nexus_run_script(url, login_username, login_password, verbose,
                        script_name, body):
     """Run the specified Script in the Nexus instance specified by URL"""
-    exit_code = 0
     with nexus.Nexus(
         url, login_username, login_password, verbosity=verbose
     ) as api:
         try:
             api.run_script(script_name, body)
         except Exception as e:
-                exit_code += 1
-                print(f'{script_name} failed')
-
-    sys.stderr.flush
-    exit(exit_code)
+            print(f'{script_name} failed')
+            exit(1)
+                

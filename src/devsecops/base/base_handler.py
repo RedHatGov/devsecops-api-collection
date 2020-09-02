@@ -8,7 +8,7 @@ import logging
 import logging.handlers
 import sys
 import urllib3
-import os
+import os.path
 urllib3.disable_warnings()
 
 
@@ -69,7 +69,7 @@ class BaseApiHandler(object):
         stderr.setLevel(verbosity)
 
         self.logger.addHandler(stderr)
-        
+
         if os.path.exists('/dev/log'):
             syslog = logging.handlers.SysLogHandler(address='/dev/log')
             syslog.setFormatter(formatter)
