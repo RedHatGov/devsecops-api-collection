@@ -164,6 +164,9 @@ class Nexus(BaseApiHandler):
             'name': reponame,
             'format': 'raw',
             'online': True,
+            'raw': {
+                'contentDisposition': 'Inline'
+            },
             'storage': {
                 'blobStoreName': 'default',
                 'strictContentTypeValidation': False,
