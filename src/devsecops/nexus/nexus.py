@@ -155,6 +155,29 @@ class Nexus(BaseApiHandler):
         return self.api_req('post', 'beta/repositories/maven/proxy', data,
                             ok=[201])
 
+    def add_raw_repo(self, reponame: str = None) -> requests.Response:
+        """
+        Adds a raw format repository backed by the default blobstore
+        to the server.
+        """
+        data = {
+            'name': reponame,
+            'format': 'raw',
+            'online': True,
+            'raw': {
+                'contentDisposition': 'Inline'
+            },
+            'storage': {
+                'blobStoreName': 'default',
+                'strictContentTypeValidation': False,
+                'writePolicy': 'ALLOW'
+            },
+            'cleanup': None,
+            'type': 'hosted'
+        }
+        return self.api_req('post', 'beta/repositories/raw/hosted', data,
+                            ok=[201])
+
     def update_group_repo(self, reponame: str,
                           memberreponames: List[str]) -> requests.Response:
         """
