@@ -178,6 +178,29 @@ class Nexus(BaseApiHandler):
         return self.api_req('post', 'beta/repositories/raw/hosted', data,
                             ok=[201])
 
+    def update_repo(self, reponame: str = None, writepolicy: str = None) -> requests.Response:
+        """
+        Updates the writePolicy for a Maven2 format release repository.
+        """
+        data = {
+            'name': reponame,
+            'online': True,
+            'format': 'maven2',
+            'storage': {
+                'blobStoreName': 'default',
+                'strictContentTypeValidation': True,
+                'writePolicy': writepolicy
+            },
+            'type': 'hosted',
+            'cleanup': None,
+            'maven': {
+                'versionPolicy': 'RELEASE',
+                'layoutPolicy': 'STRICT'
+            }
+        }
+        return self.api_req('put', f'beta/repositories/maven/hosted/{reponame}', data,
+                            ok=[204])
+
     def update_group_repo(self, reponame: str,
                           memberreponames: List[str]) -> requests.Response:
         """
