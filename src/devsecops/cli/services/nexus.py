@@ -178,6 +178,43 @@ def dso_nexus_add_raw_repo(url, login_username, login_password, verbose,
     exit(exit_code)
 
 
+@dso_nexus.command(name='update-repository')
+@opts.default_opts
+@click.option('--repository-names', '-r', required=True,
+              help=('the name of the repositories to add '
+                    '(separate multiples with commas)'))
+@click.option('--write-policy', '-p', required=True,
+              help=('the desired writePolicy '
+                    '(ALLOW, DENY, ALLOW_ONCE'))
+def dso_nexus_update_repo(url, login_username, login_password, verbose,
+                       repository_names, write_policy):
+    """Update writePolicy for Maven repositories specified by URL"""
+    exit_code = 0
+    errors = {}
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        for repository_name in repository_names.split(','):
+            if not api.search_repos(repository_name):
+                exit_code += 1
+                print(f'{repository_name} does not exist')
+            else:
+                try:
+                    if api.update_repo(repository_name, write_policy) is not None:
+                        print(f'{repository_name} updated with writePolicy {write_policy}')
+                    else:
+                        exit_code += 1
+                        print(f'{repository_name} update failed')
+                except Exception as e:
+                    exit_code += 1
+                    errors[repository_name] = e.msg
+                    print(f'{repository_name} update failed')
+    for repo, error in errors.items():
+        sys.stderr.write(f'Error updating {repo}:\n{error}\n')
+    sys.stderr.flush
+    exit(exit_code)
+
+
 @dso_nexus.command(name='update-group-repo')
 @opts.default_opts
 @click.option('--group-repository-name', '-r', required=True,
