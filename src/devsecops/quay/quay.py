@@ -94,7 +94,7 @@ class Quay(BaseApiHandler):
                 description: str = None) -> requests.Response:
         """
         Add an Application to an Organization on the Quay instance, returning
-        None if no organization was created.
+        None if no application was created.
         """
         try:
             return self.api_req(
@@ -106,7 +106,29 @@ class Quay(BaseApiHandler):
                 }
             )
         except UnexpectedApiResponse as e:
-            self.logger.warning(f'Unable to add {org_name}')
+            self.logger.warning(f'Unable to add {app_name}')
+            self.logger.info(json.loads(str(e)).get('error_message'))
+            pass
+
+    def add_repo(self, org_name: str = None, repo_name: str = None,
+                description: str = None) -> requests.Response:
+        """
+        Add a Repository to an Organization on the Quay instance.
+        """
+        try:
+            return self.api_req(
+                'post',
+                'repository',
+                data={
+                    'repo_kind': 'image',
+                    'namespace': org_name,
+                    'visibility': 'public',
+                    'repository': repo_name,
+                    'description': description or "Created with devsecops-api"
+                }
+            )
+        except UnexpectedApiResponse as e:
+            self.logger.warning(f'Unable to add {repo_name}')
             self.logger.info(json.loads(str(e)).get('error_message'))
             pass
 

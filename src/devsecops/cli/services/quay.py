@@ -55,6 +55,21 @@ def dso_quay_add_app(url, login_username, login_password, verbose,
                f'client_secret: {new_app.json()["client_secret"]})'))
 
 
+@dso_quay.command(name='add-repo')
+@opts.default_opts
+@opts.add_repo_opt
+def dso_quay_add_repo(url, login_username, login_password, verbose,
+                     organization, repo_name, repo_description):
+    """
+    Add a Repository to an Organization on the Quay instance specified by URL
+    """
+    with quay.Quay(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        new_repo = api.add_repo(organization, repo_name, repo_description)
+        print(f'{repo_name} ok')
+
+
 @dso_quay.command(name='add-robot')
 @opts.default_opts
 @opts.add_robot_opt

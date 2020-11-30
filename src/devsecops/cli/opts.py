@@ -58,6 +58,18 @@ def add_app_opt(f):
     return f
 
 
+def add_repo_opt(f):
+    for option in reversed([
+        add_org_opt,
+        click.option('--repo-name', '-n', required=True,
+                     help='the repository to add to the org'),
+        click.option('--repo-description', '-d', required=False,
+                     help='the description of the repository'),
+    ]):
+        f = option(f)
+    return f
+
+
 def add_robot_opt(f):
     for option in reversed([
         add_org_opt,
