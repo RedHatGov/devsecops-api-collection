@@ -16,8 +16,8 @@ __all__ = [
 
 __title__       = "devsecops-api"  # noqa: E221
 __name__        = __title__  # noqa: E221
-__summary__     = "DevSecOps Workshop API Script"  # noqa: E221
-__uri__         = "https://github.com/jharmison-redhat/devsecops-api-script"  # noqa: E221,E501
+__summary__     = "DevSecOps Workshop API Collection"  # noqa: E221
+__uri__         = "https://github.com/RedHatGov/devsecops-api-collection"  # noqa: E221,E501
 __version__     = "0.2.0"  # noqa: E221
 __release__     = "alpha"  # noqa: E221
 __status__      = "Development"  # noqa: E221
