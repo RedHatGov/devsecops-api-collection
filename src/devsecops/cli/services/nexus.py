@@ -178,6 +178,39 @@ def dso_nexus_add_raw_repo(url, login_username, login_password, verbose,
     exit(exit_code)
 
 
+@dso_nexus.command(name='add-docker-repository')
+@opts.default_opts
+@click.option('--repository-names', '-r', required=True,
+              help=('the name of the repositories to add '
+                    '(separate multiples with commas)'))
+def dso_nexus_add_docker_repo(url, login_username, login_password, verbose,
+                       repository_names):
+    """Add new docker repositories to the Nexus instance specified by URL"""
+    exit_code = 0
+    errors = {}
+    with nexus.Nexus(
+        url, login_username, login_password, verbosity=verbose
+    ) as api:
+        for repository_name in repository_names.split(','):
+            if not api.search_repos(repository_name):
+                try:
+                    if api.add_docker_repo(repository_name) is not None:
+                        print(f'{repository_name} added')
+                    else:
+                        exit_code += 1
+                        print(f'{repository_name} failed')
+                except Exception as e:
+                    exit_code += 1
+                    errors[repository_name] = e.msg
+                    print(f'{repository_name} failed')
+            else:
+                print(f'{repository_name} ok')
+    for repo, error in errors.items():
+        sys.stderr.write(f'Error adding {repo}:\n{error}\n')
+    sys.stderr.flush
+    exit(exit_code)
+
+
 @dso_nexus.command(name='update-repository')
 @opts.default_opts
 @click.option('--repository-names', '-r', required=True,
