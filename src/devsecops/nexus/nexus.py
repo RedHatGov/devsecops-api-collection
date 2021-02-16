@@ -178,6 +178,30 @@ class Nexus(BaseApiHandler):
         return self.api_req('post', 'beta/repositories/raw/hosted', data,
                             ok=[201])
 
+    def add_docker_repo(self, reponame: str = None) -> requests.Response:
+        """
+        Adds a docker format repository backed by the default blobstore
+        to the server.
+        """
+        data = {
+            'name': reponame,
+            'online': True,
+            'docker': {
+                'v1Enabled': False,
+                'forceBasicAuth': True,
+                'httpPort': 8082,
+                'httpsPort': 8083
+            },
+            'storage': {
+                'blobStoreName': 'default',
+                'strictContentTypeValidation': False,
+                'writePolicy': 'ALLOW'
+            },
+            'cleanup': None
+        }
+        return self.api_req('post', 'beta/repositories/docker/hosted', data,
+                            ok=[201])
+
     def update_repo(self, reponame: str = None, writepolicy: str = None) -> requests.Response:
         """
         Updates the writePolicy for a Maven2 format release repository.
