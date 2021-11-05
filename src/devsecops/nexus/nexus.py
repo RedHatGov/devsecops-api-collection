@@ -86,12 +86,28 @@ class Nexus(BaseApiHandler):
             self.api_req('get', f'beta/security/users?userId={username}').text
         )
 
+    def search_roles(self, role_id: str = None) -> list:
+        """
+        Returns information about the queried role as a list of results
+        """
+        def has_role_id(role: dict = {}, role_id: str = role_id) -> bool:
+            return role.get('id', '') == role_id
+        return list(filter(has_role_id, self.list_roles()))
+
     def list_repos(self) -> list:
         """
         Returns a list of all repositories configured on the server
         """
         return json.loads(
             self.api_req('get', 'beta/repositories').text
+        )
+
+    def list_roles(self) -> list:
+        """
+        Returns a list of all roles configured on the server
+        """
+        return json.loads(
+            self.api_req('get', 'v1/security/roles').text
         )
 
     def add_repo(self, reponame: str = None) -> requests.Response:
@@ -201,6 +217,49 @@ class Nexus(BaseApiHandler):
         }
         return self.api_req('post', 'beta/repositories/docker/hosted', data,
                             ok=[201])
+
+    def add_npm_repo(self, reponame: str = None) -> requests.Response:
+        """
+        Adds a docker format repository backed by the default blobstore
+        to the server.
+        """
+        data = {
+            "name": reponame,
+            "online": True,
+            "storage": {
+                "blobStoreName": "default",
+                "strictContentTypeValidation": True,
+                "writePolicy": "ALLOW"
+            },
+            "component": {
+                "proprietaryComponents": True
+            }
+        }
+        return self.api_req('post', 'v1/repositories/npm/hosted', data,
+                            ok=[201])
+
+    def add_role(self, roleid: str = None, description: str = '', privileges = []) -> requests.Response:
+        """
+        Adds a docker format repository backed by the default blobstore
+        to the server.
+        """
+        data = {
+            "id": roleid,
+            "name": roleid,
+            "description": roleid,
+            "privileges": privileges,
+            "roles": []
+        }
+        return self.api_req('post', 'v1/security/roles', data,
+                            ok=[200])
+
+    def grant_role_to_user(self, user_name: str, user_data: dict, role_id: str) -> requests.Response:
+        """
+        Grants the specified role to the user.
+        """
+        user_data['roles'].append(role_id) # If the role_id was already on the list, Nexus will ignore it and do nothing
+        return self.api_req('put', f'v1/security/users/{user_name}', user_data,
+                        ok=[204])
 
     def update_repo(self, reponame: str = None, writepolicy: str = None) -> requests.Response:
         """
