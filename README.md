@@ -9,3 +9,5 @@ Additionally, there is a CLI based on `click` that helps to manipulate these API
 ## NOTE
 
 The Ansible Collection is... not actually done. This is a work in progress. The script works. 🙂
+
+There is, however, a separate ansible collection that exposes parts of the CLI - https://github.com/ploigos/ploigos-service-configs

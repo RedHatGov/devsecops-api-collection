@@ -32,6 +32,83 @@ def dso_nexus_add_user(url, login_username, login_password, verbose, usernames,
     exit(exit_code)
 
 
+@dso_nexus.command(name='add-role')
+@opts.default_opts
+@opts.add_role_opt
+@click.option('--privileges', '-p', required=True,
+              help=('the list of privileges that the role should have '
+                    '(separate multiples with commas)'))
+def dso_nexus_add_role(url, login_username, login_password, verbose, role_id, privileges):
+    """Add a role to the Nexus instance specified by URL"""
+    exit_code = 0
+    with nexus.Nexus(
+            url, login_username, login_password, verbosity=verbose
+    ) as api:
+        privilege_list = privileges.split(',')
+        if api.search_roles(role_id):
+            print(f'{role_id} ok')
+        else:
+            newrole = api.add_role(role_id, privileges=privilege_list)
+            if newrole is not None:
+                print(f'{role_id} added')
+            else:
+                exit_code += 1
+                print(f'{role_id} failed')
+    exit(exit_code)
+
+
+@dso_nexus.command(name='grant-role-to-user')
+@opts.default_opts
+@opts.add_role_opt
+@click.option('--user-name', '-u', required=True,
+              help='Grant the role to this user')
+def dso_nexus_grant_role_to_user(url, login_username, login_password, verbose, role_id, user_name):
+    """Assigns a role to the specified user"""
+    exit_code = 0
+    with nexus.Nexus(
+            url, login_username, login_password, verbosity=verbose
+    ) as api:
+        user = None
+        if api.search_roles(role_id):
+            user_list = api.search_users(username=user_name)
+            if user_list:
+                user = user_list[0]
+                api.grant_role_to_user(user_name=user_name, user_data=user, role_id=role_id)
+                print(f'{user_name} changed')
+            else:
+                print(f'user {user_name} does not exist')
+                print(f'grant {role_id} to {user_name} failed')
+                exit_code += 1
+        else:
+            print(f'role {role_id} does not exist')
+            print(f'grant {role_id} to {user_name} failed')
+            exit_code += 1
+    exit(exit_code)
+
+
+@dso_nexus.command(name='search-roles')
+@opts.default_opts
+@opts.add_role_opt
+def dso_nexus_search_roles(url, login_username, login_password, verbose, role_id):
+    """Search for and display information about a role in the Nexus
+    instance specified by URL"""
+    with nexus.Nexus(
+            url, login_username, login_password, verbosity=verbose
+    ) as api:
+        pprint(api.search_roles(role_id))
+
+
+@dso_nexus.command(name='list-roles')
+@opts.default_opts
+def dso_nexus_list_roles(url, login_username, login_password, verbose):
+    """Search for and display information about a role in the Nexus
+    instance specified by URL"""
+    with nexus.Nexus(
+            url, login_username, login_password, verbosity=verbose
+    ) as api:
+        pprint(api.list_roles())
+
+
 @dso_nexus.command(name='list-users')
 @opts.default_opts
 def dso_nexus_list_users(url, login_username, login_password, verbose):
@@ -210,6 +287,37 @@ def dso_nexus_add_docker_repo(url, login_username, login_password, verbose,
     sys.stderr.flush
     exit(exit_code)
 
+@dso_nexus.command(name='add-npm-repository')
+@opts.default_opts
+@click.option('--repository-names', '-r', required=True,
+              help=('the name of the repositories to add '
+                    '(separate multiples with commas)'))
+def dso_nexus_add_npm_repo(url, login_username, login_password, verbose,
+                              repository_names):
+    """Add new npm repositories to the Nexus instance specified by URL"""
+    exit_code = 0
+    errors = {}
+    with nexus.Nexus(
+            url, login_username, login_password, verbosity=verbose
+    ) as api:
+        for repository_name in repository_names.split(','):
+            if not api.search_repos(repository_name):
+                try:
+                    if api.add_npm_repo(repository_name) is not None:
+                        print(f'{repository_name} added')
+                    else:
+                        exit_code += 1
+                        print(f'{repository_name} failed')
+                except Exception as e:
+                    exit_code += 1
+                    errors[repository_name] = e.msg
+                    print(f'{repository_name} failed')
+            else:
+                print(f'{repository_name} ok')
+    for repo, error in errors.items():
+        sys.stderr.write(f'Error adding {repo}:\n{error}\n')
+    sys.stderr.flush
+    exit(exit_code)
 
 @dso_nexus.command(name='update-repository')
 @opts.default_opts
