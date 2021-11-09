@@ -220,7 +220,7 @@ class Nexus(BaseApiHandler):
 
     def add_npm_repo(self, reponame: str = None) -> requests.Response:
         """
-        Adds a docker format repository backed by the default blobstore
+        Adds an npm format repository backed by the default blobstore
         to the server.
         """
         data = {
@@ -240,8 +240,7 @@ class Nexus(BaseApiHandler):
 
     def add_role(self, roleid: str = None, description: str = '', privileges = []) -> requests.Response:
         """
-        Adds a docker format repository backed by the default blobstore
-        to the server.
+        Add a role to the Nexus instance, returning None if no user was created
         """
         data = {
             "id": roleid,
