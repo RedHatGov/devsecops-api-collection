@@ -74,13 +74,14 @@ def dso_nexus_grant_role_to_user(url, login_username, login_password, verbose, r
             if user_list:
                 user = user_list[0]
                 api.grant_role_to_user(user_name=user_name, user_data=user, role_id=role_id)
+                print(f'{user_name} changed')
             else:
                 print(f'user {user_name} does not exist')
-                print(f'grant {role_id} to {user_name} error')
+                print(f'grant {role_id} to {user_name} failed')
                 exit_code += 1
         else:
             print(f'role {role_id} does not exist')
-            print(f'grant {role_id} to {user_name} error')
+            print(f'grant {role_id} to {user_name} failed')
             exit_code += 1
     exit(exit_code)
 
