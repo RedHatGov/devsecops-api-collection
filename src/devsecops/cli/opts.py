@@ -35,6 +35,11 @@ def add_users_opt(f):
     return f
 
 
+def add_role_opt(f):
+    return click.option('--role-id', '-r', required=True,
+                        help=('A machine-friendly ID for the role'))(f)
+
+
 def add_orgs_opt(f):
     return click.option('--organizations', '-o', required=True,
                         help=('organizations to add to the service '
